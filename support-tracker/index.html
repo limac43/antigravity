@@ -3,412 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Tracker — Painel de Observabilidade</title>
-    <meta name="description" content="Sistema de monitoramento de tempo e gaps de conhecimento para analistas de suporte.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Support Tracker | Agent Metrics</title>
+    <!-- Fontes modernas corporativas (Segoe UI, Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Tesseract.js para leitura de imagem (OCR) local no navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- Ambient Background -->
-    <div class="ambient-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-        <div class="noise-overlay"></div>
-    </div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-icon">
-                <i class="ri-radar-line"></i>
+    <div class="workspace">
+        
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-main">
+                <div class="page-title-group">
+                    <i class="ri-customer-service-2-line"></i>
+                    <div>
+                        <h1>Support Tracker</h1>
+                        <span class="subtitle">Console do Analista</span>
+                    </div>
+                </div>
+                <div class="user-badge">
+                    <div class="user-profile" id="user-profile-icon">A</div>
+                    <span>Analista Ativo</span>
+                </div>
             </div>
-            <span class="brand-text">Support<br>Tracker</span>
-        </div>
-        <nav class="sidebar-nav">
-            <button class="nav-item active" data-view="tracker" id="nav-tracker">
-                <i class="ri-timer-flash-line"></i>
-                <span>Tracker</span>
-            </button>
-            <button class="nav-item" data-view="history" id="nav-history">
-                <i class="ri-history-line"></i>
-                <span>Histórico</span>
-            </button>
-            <button class="nav-item" data-view="dashboard" id="nav-dashboard">
-                <i class="ri-pie-chart-2-line"></i>
-                <span>Dashboard</span>
-            </button>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="analyst-avatar" id="analyst-avatar">A</div>
-            <span class="analyst-name" id="analyst-name-display">Analista</span>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-wrapper">
-
-        <!-- Top Bar -->
-        <header class="topbar">
-            <button class="hamburger" id="hamburger">
-                <i class="ri-menu-line"></i>
-            </button>
-            <div class="topbar-title">
-                <h1 id="page-title">Tracker de Análise</h1>
-                <p class="topbar-subtitle" id="page-subtitle">Gerencie o tempo e registre os dados do chamado.</p>
-            </div>
-            <div class="topbar-actions">
-                <button class="icon-btn" id="btn-sound-toggle" title="Ativar/Desativar som de alerta">
-                    <i class="ri-volume-up-line"></i>
-                </button>
-                <button class="icon-btn" id="btn-fullscreen" title="Tela cheia">
-                    <i class="ri-fullscreen-line"></i>
-                </button>
-            </div>
+            
+            <!-- Sub Navigation Tabs -->
+            <nav class="sub-nav">
+                <button class="tab-btn active" data-target="view-tracker"><i class="ri-timer-line"></i> Tracker</button>
+                <button class="tab-btn" data-target="view-performance"><i class="ri-bar-chart-box-line"></i> Meu Desempenho</button>
+                <button class="tab-btn" data-target="view-logs"><i class="ri-file-text-line"></i> Analisador de Logs</button>
+                <button class="tab-btn" data-target="view-history"><i class="ri-history-line"></i> Histórico</button>
+            </nav>
         </header>
 
-        <!-- ==================== VIEW: TRACKER ==================== -->
-        <main class="view active" id="view-tracker">
+        <!-- Content Area -->
+        <main class="content-area">
             
-            <!-- Stats Row -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-blue"><i class="ri-file-list-3-line"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="stat-today">0</span>
-                        <span class="stat-label">Hoje</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-green"><i class="ri-timer-line"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="stat-avg-time">00:00</span>
-                        <span class="stat-label">Tempo Médio</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-yellow"><i class="ri-error-warning-line"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="stat-escalated">0</span>
-                        <span class="stat-label">Escalados</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-red"><i class="ri-alarm-warning-line"></i></div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="stat-critical">0</span>
-                        <span class="stat-label">Críticos</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Two Column Layout -->
-            <div class="tracker-grid">
-
-                <!-- Timer Column -->
-                <section class="panel timer-panel">
-                    <div class="panel-header">
-                        <h2><i class="ri-timer-flash-line"></i> Smart Timer</h2>
-                        <span class="status-pill status-idle" id="timer-status">
-                            <span class="pill-dot"></span>Aguardando
-                        </span>
-                    </div>
-
-                    <!-- Circular Timer -->
-                    <div class="circular-timer-wrapper">
-                        <svg class="timer-ring" viewBox="0 0 220 220">
-                            <circle class="ring-bg" cx="110" cy="110" r="100" />
-                            <circle class="ring-progress" id="ring-progress" cx="110" cy="110" r="100" />
-                        </svg>
-                        <div class="timer-center">
-                            <span class="timer-time" id="timer-display">00:00</span>
-                            <span class="timer-phase" id="timer-phase">Pronto para iniciar</span>
+            <!-- ==================== VIEW: TRACKER ==================== -->
+            <section class="view active" id="view-tracker">
+                <div class="tracker-layout">
+                    <!-- Cronômetro Minimalista -->
+                    <div class="timer-box">
+                        <div class="timer-display-group">
+                            <span class="timer-digits" id="timer-display">00:00:00</span>
+                            <span class="timer-status badge badge-green" id="timer-status">Dentro do SLA</span>
                         </div>
-                    </div>
-
-                    <!-- SLA Progress Bar -->
-                    <div class="sla-track">
-                        <div class="sla-bar">
-                            <div class="sla-fill" id="sla-fill"></div>
-                            <div class="sla-marker marker-30" title="30 min — Escalar grupo"><span>30m</span></div>
-                            <div class="sla-marker marker-45" title="45 min — Escalar líder"><span>45m</span></div>
+                        
+                        <!-- Barra de progresso linear fina (estilo Datadog) -->
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="sla-fill"></div>
+                            <div class="progress-marker marker-30"></div>
+                            <div class="progress-marker marker-45"></div>
                         </div>
-                        <div class="sla-labels">
-                            <span>0 min</span>
-                            <span>45+ min</span>
+
+                        <div class="timer-actions">
+                            <button class="btn btn-primary" id="btn-play"><i class="ri-play-fill"></i> Start</button>
+                            <button class="btn btn-outline" id="btn-pause" disabled><i class="ri-pause-fill"></i> Pause</button>
+                            <button class="btn btn-danger-outline" id="btn-stop" disabled><i class="ri-stop-fill"></i> Stop & Log</button>
+                            <button class="btn btn-icon" id="btn-reset" disabled title="Reset"><i class="ri-refresh-line"></i></button>
                         </div>
-                    </div>
 
-                    <!-- Controls -->
-                    <div class="timer-controls">
-                        <button class="ctrl-btn ctrl-play" id="btn-play" title="Iniciar">
-                            <i class="ri-play-fill"></i>
-                        </button>
-                        <button class="ctrl-btn ctrl-pause" id="btn-pause" disabled title="Pausar">
-                            <i class="ri-pause-fill"></i>
-                        </button>
-                        <button class="ctrl-btn ctrl-stop" id="btn-stop" disabled title="Parar e Registrar">
-                            <i class="ri-stop-fill"></i>
-                        </button>
-                        <button class="ctrl-btn ctrl-reset" id="btn-reset" disabled title="Novo Ticket">
-                            <i class="ri-refresh-line"></i>
-                        </button>
-                    </div>
-
-                    <!-- Inline Alerts -->
-                    <div class="alerts-stack" id="alerts-stack">
-                        <!-- Alert 30m -->
-                        <div class="inline-alert alert-warn hidden" id="alert-30m">
-                            <div class="alert-icon"><i class="ri-error-warning-fill"></i></div>
-                            <div class="alert-body">
-                                <strong>30 min atingidos — Escalar para o Grupo</strong>
-                                <p>Por favor, acione o grupo de suporte de analistas para ajuda.</p>
-                                <label class="ck-label"><input type="checkbox" id="check-group"> Eu acionei o grupo de suporte.</label>
+                        <!-- Alertas integrados -->
+                        <div class="alert-box alert-warning hidden" id="alert-30m">
+                            <i class="ri-error-warning-fill"></i>
+                            <div>
+                                <strong>Limite de 30m Atingido</strong>
+                                <span>Escalone o chamado para o grupo de analistas.</span>
+                                <label class="check-box-label mt-2"><input type="checkbox" id="check-group"> Ação realizada (Escalonamento N1)</label>
                             </div>
                         </div>
-                        <!-- Alert 45m -->
-                        <div class="inline-alert alert-crit hidden" id="alert-45m">
-                            <div class="alert-icon"><i class="ri-alarm-warning-fill"></i></div>
-                            <div class="alert-body">
-                                <strong>45 min atingidos — Escalar para o Líder</strong>
-                                <p>Acione imediatamente o seu líder direto para destravamento.</p>
-                                <label class="ck-label"><input type="checkbox" id="check-leader"> Eu acionei o líder direto.</label>
+                        <div class="alert-box alert-critical hidden" id="alert-45m">
+                            <i class="ri-alarm-warning-fill"></i>
+                            <div>
+                                <strong>Tempo Crítico (>45m)</strong>
+                                <span>Escalone imediatamente para a liderança.</span>
+                                <label class="check-box-label mt-2"><input type="checkbox" id="check-leader"> Ação realizada (Escalonamento Liderança)</label>
                             </div>
                         </div>
                     </div>
-                </section>
 
-                <!-- Form Column -->
-                <section class="panel form-panel" id="form-panel">
-                    <div class="panel-header">
-                        <h2><i class="ri-file-edit-line"></i> Registro do Chamado</h2>
-                    </div>
-
-                    <form id="ticket-form" class="ticket-form locked" autocomplete="off">
-                        <div class="form-lock-overlay" id="form-lock-overlay">
-                            <i class="ri-lock-line"></i>
-                            <p>Inicie e pare o cronômetro para liberar o formulário.</p>
+                    <!-- Formulário Estilo Azure Properties Panel -->
+                    <div class="form-box">
+                        <div class="form-box-header">
+                            <h3>Propriedades do Ticket</h3>
                         </div>
-
-                        <div class="form-scroll">
-                            <!-- Row 1 -->
-                            <div class="field">
-                                <label for="ticket-id"><i class="ri-hashtag"></i> ID do Ticket</label>
-                                <input type="text" id="ticket-id" placeholder="Ex: 12345" required>
+                        <form id="ticket-form" class="locked-form">
+                            <div class="form-overlay" id="form-overlay">
+                                <i class="ri-lock-line"></i> Pare o cronômetro para editar propriedades
                             </div>
-
-                            <!-- Row 2 -->
-                            <div class="field-row">
-                                <div class="field">
-                                    <label for="client"><i class="ri-building-line"></i> Convênio / Cliente</label>
-                                    <input type="text" id="client" list="client-list" placeholder="Digite ou selecione..." required>
-                                    <datalist id="client-list">
-                                        <option value="Unimed">
-                                        <option value="Bradesco Saúde">
-                                        <option value="SulAmérica">
-                                        <option value="Amil">
-                                        <option value="NotreDame Intermédica">
-                                        <option value="Hapvida">
-                                        <option value="Prevent Senior">
-                                        <option value="Porto Seguro Saúde">
-                                    </datalist>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Ticket ID <span class="req">*</span></label>
+                                    <input type="text" id="ticket-id" class="input-field" placeholder="123456" required>
                                 </div>
-                                <div class="field">
-                                    <label for="module"><i class="ri-apps-line"></i> Módulo / Área</label>
-                                    <select id="module" required>
-                                        <option value="" disabled selected>Selecione</option>
+                                <div class="form-group">
+                                    <label>Convênio / Cliente <span class="req">*</span></label>
+                                    <input type="text" id="client" class="input-field" list="client-list" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Módulo Afetado <span class="req">*</span></label>
+                                    <select id="module" class="input-field" required>
+                                        <option value="" disabled selected>Selecionar...</option>
                                         <option value="Faturamento">Faturamento</option>
                                         <option value="Cadastro">Cadastro</option>
-                                        <option value="Autorizações">Autorizações</option>
                                         <option value="Financeiro">Financeiro</option>
-                                        <option value="Relatórios">Relatórios</option>
-                                        <option value="Integração">Integração / API</option>
-                                        <option value="Outro">Outro</option>
+                                        <option value="Integração">Integração</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <!-- Row 3 -->
-                            <div class="field-row field-row-3">
-                                <div class="field">
-                                    <label for="ticket-type"><i class="ri-price-tag-3-line"></i> Tipo</label>
-                                    <select id="ticket-type" required>
-                                        <option value="" disabled selected>Selecione</option>
+                                <div class="form-group">
+                                    <label>Tipo <span class="req">*</span></label>
+                                    <select id="ticket-type" class="input-field" required>
+                                        <option value="" disabled selected>Selecionar...</option>
                                         <option value="Duvida">Dúvida de Negócio</option>
-                                        <option value="Bug">Erro / Bug</option>
+                                        <option value="Bug">Bug Sistêmico</option>
                                         <option value="Config">Configuração</option>
-                                        <option value="Acesso">Acesso / Permissão</option>
-                                        <option value="Melhoria">Solicitação de Melhoria</option>
+                                        <option value="Acesso">Permissões</option>
                                     </select>
                                 </div>
-                                <div class="field">
-                                    <label for="priority"><i class="ri-flag-line"></i> Prioridade</label>
-                                    <select id="priority" required>
-                                        <option value="" disabled selected>Selecione</option>
-                                        <option value="Baixa">Baixa</option>
-                                        <option value="Média">Média</option>
-                                        <option value="Alta">Alta</option>
-                                        <option value="Crítica">Crítica</option>
-                                    </select>
-                                </div>
-                                <div class="field">
-                                    <label for="difficulty"><i class="ri-bar-chart-line"></i> Dificuldade</label>
-                                    <div class="difficulty-selector" id="difficulty-selector">
-                                        <button type="button" class="diff-btn" data-val="1" title="Muito Fácil">1</button>
-                                        <button type="button" class="diff-btn" data-val="2" title="Fácil">2</button>
-                                        <button type="button" class="diff-btn" data-val="3" title="Média">3</button>
-                                        <button type="button" class="diff-btn" data-val="4" title="Difícil">4</button>
-                                        <button type="button" class="diff-btn" data-val="5" title="Muito Difícil">5</button>
+                                
+                                <div class="form-group full-width">
+                                    <label>Nível de Dificuldade (1-5) <span class="req">*</span></label>
+                                    <div class="diff-selector" id="difficulty-selector">
+                                        <button type="button" data-val="1">1</button>
+                                        <button type="button" data-val="2">2</button>
+                                        <button type="button" data-val="3">3</button>
+                                        <button type="button" data-val="4">4</button>
+                                        <button type="button" data-val="5">5</button>
                                     </div>
                                     <input type="hidden" id="difficulty" required>
                                 </div>
-                            </div>
 
-                            <!-- Row 4: Resolution -->
-                            <div class="field">
-                                <label for="resolution"><i class="ri-check-double-line"></i> Status de Resolução</label>
-                                <select id="resolution" required>
-                                    <option value="" disabled selected>Selecione</option>
-                                    <option value="Resolvido">Resolvido</option>
-                                    <option value="Escalado">Escalado para N2/N3</option>
-                                    <option value="Pendente Cliente">Pendente — Aguardando Cliente</option>
-                                    <option value="Pendente Interno">Pendente — Aguardando Interno</option>
-                                </select>
-                            </div>
-
-                            <!-- Row 5: Notes -->
-                            <div class="field">
-                                <label for="notes"><i class="ri-sticky-note-line"></i> Observações</label>
-                                <textarea id="notes" placeholder="Anotações livres sobre a análise..." rows="2"></textarea>
-                            </div>
-
-                            <!-- Gap Analysis (Conditional) -->
-                            <div class="gap-block hidden" id="gap-block">
-                                <div class="gap-divider">
-                                    <i class="ri-brain-line"></i>
-                                    <span>Análise de Gap de Conhecimento</span>
-                                </div>
-                                <div class="field">
-                                    <label for="delay-reason">Motivo do Atraso <span class="req">*</span></label>
-                                    <select id="delay-reason">
-                                        <option value="" disabled selected>Selecione o motivo</option>
-                                        <option value="Falta de documentação">Falta de documentação</option>
-                                        <option value="Regra de negócio desconhecida">Regra de negócio desconhecida</option>
-                                        <option value="Instabilidade do ambiente">Instabilidade do ambiente</option>
-                                        <option value="Erro complexo no sistema">Erro complexo no código / sistema</option>
-                                        <option value="Falta de acesso">Falta de acesso / permissão</option>
-                                        <option value="Dependência de terceiro">Dependência de terceiro / cliente</option>
-                                        <option value="Treinamento insuficiente">Treinamento insuficiente</option>
+                                <div class="form-group full-width">
+                                    <label>Resolução Final <span class="req">*</span></label>
+                                    <select id="resolution" class="input-field" required>
+                                        <option value="" disabled selected>Selecionar...</option>
+                                        <option value="Resolvido">Resolvido Definitivamente</option>
+                                        <option value="Escalado">Escalado para Outro Nível</option>
+                                        <option value="Pendente">Pendente - Aguardando Terceiros</option>
                                     </select>
                                 </div>
-                                <div class="field">
-                                    <label for="knowledge-deficit">O que causou o déficit? <span class="req">*</span></label>
-                                    <textarea id="knowledge-deficit" placeholder="Descreva brevemente o que você não sabia e travou a análise..." rows="3"></textarea>
+
+                                <!-- Gap Section (condicional) -->
+                                <div class="form-group full-width gap-section hidden" id="gap-block">
+                                    <div class="section-divider">Análise de Gap Identificada (>30m)</div>
+                                    <div class="form-grid mt-2 p-0">
+                                        <div class="form-group full-width">
+                                            <label>Motivo Raiz do Atraso <span class="req">*</span></label>
+                                            <select id="delay-reason" class="input-field">
+                                                <option value="" disabled selected>Selecionar...</option>
+                                                <option value="Falta de documentação">Falta de Documentação</option>
+                                                <option value="Regra de negócio">Regra de Negócio Desconhecida</option>
+                                                <option value="Instabilidade">Instabilidade no Ambiente</option>
+                                                <option value="Erro complexo">Complexidade Técnica (Bug)</option>
+                                                <option value="Treinamento">Falta de Treinamento Específico</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label>Descrição do Déficit <span class="req">*</span></label>
+                                            <textarea id="knowledge-deficit" class="input-field" rows="2" placeholder="Descreva brevemente onde seu conhecimento falhou..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-footer">
+                                <button type="submit" class="btn btn-primary" id="btn-submit">Salvar Registro</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VIEW: PERFORMANCE (AUTOANÁLISE) ==================== -->
+            <section class="view" id="view-performance">
+                
+                <!-- SEÇÃO A: RESUMO DO ÚLTIMO CHAMADO -->
+                <div class="section-header">
+                    <div>
+                        <h2>Feedback Pós-Chamado</h2>
+                        <p>Consulte como o seu último atendimento se compara com sua média do dia.</p>
+                    </div>
+                </div>
+                
+                <div class="last-ticket-panel" id="last-ticket-panel">
+                    <div class="empty-state">Nenhum chamado registrado na sessão atual. Volte aqui após concluir o primeiro ticket.</div>
+                </div>
+
+                <div class="section-divider mt-4">Métricas Globais da Sessão</div>
+                
+                <!-- SEÇÃO B: MÉTRICAS GLOBAIS REAIS -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="card-header">
+                            <h3>Operacional</h3>
+                            <i class="ri-pie-chart-2-line"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric-row">
+                                <span class="metric-label">Tickets Analisados</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-total">0</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Tempo Médio (TMA)</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-tma">0m</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Estouraram o SLA (>30m)</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value warning" id="kpi-critical">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="card-header">
+                            <h3>Eficiência</h3>
+                            <i class="ri-focus-2-line"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric-row">
+                                <span class="metric-label">Taxa de Resolução</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-resolution-rate">0%</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Dificuldade Média</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-avg-diff">0/5</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Taxa de Escalonamento</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-escalation-rate">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="card-header">
+                            <h3>Atenção: Gaps Frequentes</h3>
+                            <i class="ri-alert-line"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric-row">
+                                <span class="metric-label">Módulo Crítico</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value warning" id="kpi-worst-module">N/A</span>
+                                </div>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Principal Motivo de Atraso</span>
+                                <div class="metric-value-group">
+                                    <span class="metric-value" id="kpi-worst-reason">N/A</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid mt-4">
+                    <div class="chart-panel">
+                        <div class="chart-header">
+                            <h3>Distribuição de Tempo por Ticket</h3>
+                        </div>
+                        <div class="chart-body" id="chart-time">
+                            <div class="empty-state">Sem dados suficientes.</div>
+                        </div>
+                        <div class="chart-legend">
+                            <span><i class="legend-dot dot-green"></i> < 10m</span>
+                            <span><i class="legend-dot dot-blue"></i> 10-30m</span>
+                            <span><i class="legend-dot dot-yellow"></i> 30-45m</span>
+                            <span><i class="legend-dot dot-red"></i> > 45m</span>
+                        </div>
+                    </div>
+                    <div class="chart-panel">
+                        <div class="chart-header">
+                            <h3>Volume de Chamados por Módulo</h3>
+                        </div>
+                        <div class="chart-body" id="chart-gaps">
+                            <div class="empty-state">Sem dados suficientes.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VIEW: LOG ANALYZER ==================== -->
+            <section class="view" id="view-logs">
+                <div class="section-header">
+                    <div>
+                        <h2>Analisador Visual de Logs</h2>
+                        <p>Cole o texto da tabela de logs do job ou envie um printscreen para interpretar e montar o fluxo.</p>
+                    </div>
+                </div>
+
+                <!-- Painéis de Input -->
+                <div class="log-inputs-grid">
+                    
+                    <!-- Opção 1: Texto -->
+                    <div class="form-box">
+                        <div class="form-box-header">
+                            <h3 class="flex items-center gap-2" style="color: var(--azure-blue)"><i class="ri-file-text-line"></i> Opção 1: Colar Texto (Tabela)</h3>
+                        </div>
+                        <div class="p-4 flex-col h-full flex">
+                            <p class="text-sm mb-2" style="color: var(--text-secondary)">Selecione as linhas da tabela de logs no seu sistema, copie (Ctrl+C) e cole aqui:</p>
+                            <textarea id="raw-logs" class="input-field log-textarea" placeholder="Exemplo:&#10;7114434882 Adicionando start na caixa de saida 13/07/2026 22:32:36:192&#10;7114435079 Login expirou! 13/07/2026 22:32:39:248"></textarea>
+                            <button class="btn btn-primary mt-3 w-full justify-center" id="btn-parse-text"><i class="ri-magic-line"></i> Processar Texto</button>
+                        </div>
+                    </div>
+
+                    <!-- Opção 2: Imagem -->
+                    <div class="form-box">
+                        <div class="form-box-header">
+                            <h3 class="flex items-center gap-2" style="color: var(--azure-blue)"><i class="ri-image-line"></i> Opção 2: Jogar Imagem (OCR)</h3>
+                        </div>
+                        <div class="p-4 flex-col h-full flex">
+                            <p class="text-sm mb-2" style="color: var(--text-secondary)">Arraste um print da tabela de logs ou dê Ctrl+V em qualquer lugar da tela:</p>
+                            
+                            <div class="drop-zone" id="drop-zone">
+                                <i class="ri-upload-cloud-2-line" id="upload-icon"></i>
+                                <span id="upload-text">Arraste a imagem ou clique aqui</span>
+                                <input type="file" id="image-input" accept="image/*" class="hidden">
+                            </div>
+
+                            <div class="ocr-progress hidden" id="ocr-status">
+                                <div class="flex-between mb-1 text-sm">
+                                    <span id="ocr-phase" style="color: var(--azure-blue)">Iniciando OCR...</span>
+                                    <span id="ocr-percent" style="font-family: var(--font-mono)">0%</span>
+                                </div>
+                                <div class="progress-bar-container" style="margin-bottom:0">
+                                    <div class="progress-bar-fill" id="ocr-bar" style="background-color: var(--azure-blue)"></div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-submit" id="btn-submit">
-                                <i class="ri-save-line"></i> Salvar Registro
-                            </button>
+                            <button class="btn btn-primary mt-3 w-full justify-center" id="btn-scan-image"><i class="ri-eye-line"></i> Escanear Imagem</button>
                         </div>
-                    </form>
-                </section>
-            </div>
-        </main>
-
-        <!-- ==================== VIEW: HISTORY ==================== -->
-        <main class="view" id="view-history">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2><i class="ri-history-line"></i> Histórico de Registros</h2>
-                    <div class="panel-actions">
-                        <button class="action-btn" id="btn-export-csv" title="Exportar CSV">
-                            <i class="ri-download-2-line"></i> Exportar CSV
-                        </button>
-                        <button class="action-btn action-btn-danger" id="btn-clear-history" title="Limpar tudo">
-                            <i class="ri-delete-bin-line"></i> Limpar
-                        </button>
                     </div>
                 </div>
-                <div class="table-wrapper">
-                    <table class="data-table" id="history-table">
+
+                <!-- Dashboard do Fluxo de Log -->
+                <div class="log-dashboard hidden mt-4" id="log-dashboard">
+                    <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="metric-card p-3">
+                            <p class="metric-label">Total de Etapas</p>
+                            <p class="metric-value mt-1" id="log-stat-total">0</p>
+                        </div>
+                        <div class="metric-card p-3">
+                            <p class="metric-label">Tempo de Execução</p>
+                            <p class="metric-value mt-1" id="log-stat-time" style="color: var(--success)">0s</p>
+                        </div>
+                        <div class="metric-card p-3">
+                            <p class="metric-label">Alertas / Avisos</p>
+                            <p class="metric-value mt-1" id="log-stat-warnings" style="color: var(--warning)">0</p>
+                        </div>
+                        <div class="metric-card p-3">
+                            <p class="metric-label">Falhas Críticas</p>
+                            <p class="metric-value mt-1" id="log-stat-errors" style="color: var(--danger)">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linha do Tempo do Log -->
+                <div class="log-timeline-container hidden mt-4" id="log-output">
+                    <div class="flex-between mb-3">
+                        <h3 class="flex items-center gap-2 font-bold" style="color: var(--azure-blue)"><i class="ri-node-tree"></i> Fluxo do Processo Interpretado</h3>
+                        <div class="filter-group">
+                            <button class="filter-btn active" id="btn-filter-all">Todos</button>
+                            <button class="filter-btn" id="btn-filter-warning">Apenas Alertas/Falhas</button>
+                        </div>
+                    </div>
+
+                    <div class="timeline-box relative">
+                        <!-- Conector central (linha vertical) -->
+                        <div class="timeline-line"></div>
+                        
+                        <div class="timeline-items" id="timeline-container">
+                            <!-- Gerado pelo JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== VIEW: HISTORY ==================== -->
+            <section class="view" id="view-history">
+                <div class="table-container">
+                    <div class="table-toolbar">
+                        <div class="search-bar slim">
+                            <i class="ri-search-line"></i>
+                            <input type="text" placeholder="Filtrar por Ticket ID..." id="history-filter">
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn btn-outline" id="btn-export-csv"><i class="ri-download-2-line"></i> Exportar</button>
+                            <button class="btn btn-danger-outline" id="btn-clear-history"><i class="ri-delete-bin-line"></i> Limpar</button>
+                        </div>
+                    </div>
+                    <table class="azure-table" id="history-table">
                         <thead>
                             <tr>
-                                <th>Data/Hora</th>
+                                <th>Timestamp</th>
                                 <th>Ticket</th>
-                                <th>Cliente</th>
                                 <th>Módulo</th>
                                 <th>Tipo</th>
                                 <th>Dificuldade</th>
                                 <th>Tempo</th>
                                 <th>Status</th>
-                                <th>Gap?</th>
+                                <th>Gap</th>
                             </tr>
                         </thead>
                         <tbody id="history-body">
-                            <!-- Rows injected via JS -->
+                            <!-- Preenchido pelo JS -->
                         </tbody>
                     </table>
                     <div class="empty-state hidden" id="empty-history">
-                        <i class="ri-inbox-line"></i>
-                        <p>Nenhum registro encontrado.</p>
+                        Nenhum registro encontrado.
                     </div>
                 </div>
-            </div>
-        </main>
+            </section>
 
-        <!-- ==================== VIEW: DASHBOARD ==================== -->
-        <main class="view" id="view-dashboard">
-            <div class="dashboard-grid">
-                <!-- Top Gaps -->
-                <div class="panel">
-                    <div class="panel-header"><h2><i class="ri-brain-line"></i> Top Gaps de Conhecimento</h2></div>
-                    <div class="chart-area" id="chart-gaps">
-                        <div class="empty-state hidden" id="empty-gaps"><i class="ri-bar-chart-box-line"></i><p>Sem dados de gap suficientes.</p></div>
-                    </div>
-                </div>
-                <!-- Time Distribution -->
-                <div class="panel">
-                    <div class="panel-header"><h2><i class="ri-time-line"></i> Distribuição de Tempo</h2></div>
-                    <div class="chart-area" id="chart-time">
-                        <div class="empty-state hidden" id="empty-time"><i class="ri-bar-chart-box-line"></i><p>Sem dados de tempo suficientes.</p></div>
-                    </div>
-                </div>
-                <!-- By Module -->
-                <div class="panel">
-                    <div class="panel-header"><h2><i class="ri-apps-line"></i> Chamados por Módulo</h2></div>
-                    <div class="chart-area" id="chart-modules">
-                        <div class="empty-state hidden" id="empty-modules"><i class="ri-bar-chart-box-line"></i><p>Sem dados de módulo suficientes.</p></div>
-                    </div>
-                </div>
-                <!-- Summary -->
-                <div class="panel">
-                    <div class="panel-header"><h2><i class="ri-line-chart-line"></i> Resumo Geral</h2></div>
-                    <div class="summary-stats" id="summary-stats">
-                        <div class="empty-state hidden" id="empty-summary"><i class="ri-bar-chart-box-line"></i><p>Sem dados suficientes.</p></div>
-                    </div>
-                </div>
-            </div>
         </main>
-
     </div>
 
-    <!-- Toast Container -->
+    <datalist id="client-list">
+        <option value="Unimed">
+        <option value="Bradesco">
+        <option value="SulAmérica">
+    </datalist>
+
     <div class="toast-container" id="toast-container"></div>
-
-    <!-- Analyst Name Modal (First Use) -->
-    <div class="modal-overlay hidden" id="modal-analyst">
-        <div class="modal-card">
-            <div class="modal-icon"><i class="ri-user-smile-line"></i></div>
-            <h3>Bem-vindo ao Support Tracker</h3>
-            <p>Informe seu nome para personalizar seus registros.</p>
-            <input type="text" id="analyst-name-input" placeholder="Seu nome..." class="modal-input" autofocus>
-            <button class="btn-modal-confirm" id="btn-save-name">Começar <i class="ri-arrow-right-line"></i></button>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>
