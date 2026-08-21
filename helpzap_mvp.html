@@ -386,7 +386,11 @@
          * ========================================= */
         const GROQ_MODEL = 'groq/compound';
 
-        const GROQ_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente, auxiliando analistas de suporte da ZG Soluções. Seu papel é gerar mensagens prontas para envio no WhatsApp, com tom profissional, empático e humano.`;
+        const GROQ_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
+REGRAS OBRIGATÓRIAS DE FORMATAÇÃO:
+Sempre retorne EXATAMENTE 3 mensagens (Formal, Direto, Acolhedor).
+Você DEVE separar as 3 mensagens com a string exata "|||" (três barras verticais).
+NUNCA inclua títulos (ex: "Opção 1:", "Formal:"), introduções ou conclusões no texto gerado. Apenas o texto puro das 3 mensagens e o separador.`;
 
         /* =========================================
          *  DADOS E CONSTANTES DO APLICATIVO
@@ -633,6 +637,12 @@
          * Tenta vários padrões: "Opção 1:", "1.", "1)", "**Opção 1**", separadores ---
          */
         function parseGrokOptions(fullText) {
+            // Tenta o separador estrito "|||" primeiro
+            if (fullText.includes('|||')) {
+                const parts = fullText.split('|||').map(s => s.trim()).filter(s => s.length > 5);
+                if (parts.length > 0) return parts.slice(0, 3);
+            }
+
             // Tenta split por padrões comuns de numeração
             const patterns = [
                 /(?:^|\n)\s*\*{0,2}Opção\s*\d+\*{0,2}\s*[-:.]?\s*/gi,
@@ -824,8 +834,8 @@
             // Gerar o prompt para IA externa (e para o Grok)
             const userContextStr = userContextLines.length > 0 ? userContextLines.join("\n") : "Nenhum detalhe extra preenchido.";
             
-            const promptExternal = `Você é um assistente virtual de atendimento ao cliente, auxiliando analistas de suporte da ZG Soluções.
-Por favor, gere 3 opções de respostas amigáveis, humanizadas e resolutivas para eu enviar ao meu cliente no WhatsApp.
+            const promptExternal = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
+Por favor, gere 3 opções de respostas amigáveis e resolutivas para envio no WhatsApp.
 
 Aqui estão os dados do atendimento atual:
 - Cenário: ${scenarioTextMap[scenario]}
@@ -836,11 +846,11 @@ Detalhes preenchidos:
 ${userContextStr}
 
 Instruções:
+- GERE EXATAMENTE 3 OPÇÕES (1. Formal, 2. Direta, 3. Acolhedora).
+- OBRIGATÓRIO: Separe CADA opção com a string "|||". Não use "Opção 1", apenas as mensagens separadas por "|||".
 - Seja claro, objetivo e empático.
-- Não invente informações, nomes, prazos ou ferramentas que não mencionei.
+- Não invente informações, prazos ou ferramentas que não mencionei.
 - Não mencione nomes de responsáveis internos, refira-se à "equipe técnica" ou "setor responsável".
-- Ofereça tons variados nas respostas (ex: uma mais formal, uma mais direta, uma mais acolhedora).
-- Não coloque saudações genéricas no topo, retorne apenas os textos das mensagens prontos para envio.
 - Jamais diga que o chamado será resolvido agora, prefira tons como "em breve daremos um retorno".
 - Os retornos sempre serão realizados através do próprio chamado.`;
 
