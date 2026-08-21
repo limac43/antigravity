@@ -47,7 +47,7 @@
         body {
             font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main);
             min-height: 100vh; padding-top: 80px; padding-bottom: 2rem; line-height: 1.6;
-            display: flex; flex-direction: column; align-items: center; transition: background 0.3s, color 0.3s;
+            display: flex; flex-direction: column; align-items: center;
         }
         /* Navbar */
         .navbar {
@@ -219,7 +219,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
+<body class="dark-mode">
 
     <!-- Navbar Superior -->
     <nav class="navbar">
@@ -227,8 +227,8 @@
             <i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap AI
         </div>
         <div class="navbar-menu">
-            <button class="nav-btn" id="btnToggleTheme" title="Alternar Tema Escuro">
-                <i class="fa-solid fa-moon"></i> Modo Escuro
+            <button class="nav-btn" id="btnOpenDocsModal" title="Documentação">
+                <i class="fa-solid fa-book"></i> Documentação
             </button>
             <button class="nav-btn" id="btnToggleSidebar" style="display: none;">
                 <i class="fa-solid fa-comments"></i> Respostas Locais
@@ -252,6 +252,45 @@
             <button class="prompt-btn-copy" id="btnCopyPrompt">
                 <i class="fa-regular fa-copy"></i> Copiar Prompt para IA
             </button>
+        </div>
+    </div>
+
+    <!-- Modal Documentação -->
+    <div class="modal-overlay" id="docsModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-book"></i> Documentação ZG</div>
+                <button class="btn-close-sidebar" id="btnCloseDocsModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="prompt-container" style="flex: 1; overflow-y: auto; text-align: left; max-height: unset;">
+                <div class="prompt-text" style="color: var(--text-main); font-family: 'Inter', sans-serif;">
+                    <h3>Chamados priorizados.</h3>
+                    <p>1° Informamos que a sua solicitação já passou pela nossa triagem inicial:</p>
+                    <p>🎟️ Validação do Ticket: O chamado *n°ticket* foi devidamente validado e priorizado em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
+                    <br>
+                    <p>2° Gostaríamos de informar que o seu atendimento recebeu um direcionamento especial pela nossa equipe:</p>
+                    <p>⚡ Priorização: O chamado *n°ticket* foi devidamente priorizado em nossa fila de atendimento.</p>
+                    <p>🕵️ Atribuição: O analista responsável pela demanda já foi notificado sobre a urgência do chamado.</p>
+                    <br>
+                    <p>3°Informamos que as suas solicitações passaram pela nossa triagem inicial e foram atualizadas:</p>
+                    <p>🎟️ Tickets Validados e Priorizados: *n°dos tickets*</p>
+                    <p>🚀 Andamento: Todas as demandas foram devidamente priorizadas em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+                    
+                    <h3>Quando o chamado que o cliente pediu prioridade se encontra “Em Atendimento”.</h3>
+                    <p>4° Passando para te avisar que o chamado *n°ticket* já se encontra em atendimento! 👩‍💻</p>
+                    <p>🚀 O analista responsável já está analisando o seu caso e logo mais trará um posicionamento direto no ticket.</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+
+                    <h3>Quando o cliente realiza uma segunda cobrança</h3>
+                    <p>5° Já informamos ao analista responsável que você precisa de um retorno urgente sobre este chamado. Ele já está ciente e, em breve, vai te responder diretamente no ticket com todas as validações concluídas, combinado?</p>
+                    <p>Qualquer dúvida, sigo à disposição por aqui!</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+
+                    <h3>Quando o cliente solicita prioridade e o Zerinho finalizou o ticket</h3>
+                    <p>6° Verificamos que o zerinho finalizou o chamado e caso você não esteja de acordo ou a sua dúvida ainda não tenha sido totalmente resolvida, é só realizar a reabertura do ticket que a nossa equipe assume a solicitação para fazer todas as validações necessárias.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -624,6 +663,12 @@
          */
         function renderGrokCards(options) {
             const toneLabels = ['Formal', 'Direto', 'Acolhedor'];
+            const toneIcons = [
+                '<i class="fa-solid fa-hat-wizard"></i>', // Formal (Cartola/Mágico)
+                '<i class="fa-solid fa-bullseye"></i>',   // Direto (Alvo)
+                '<i class="fa-solid fa-handshake"></i>'   // Acolhedor (Aperto de mãos)
+            ];
+            
             grokResults.innerHTML = '';
 
             options.forEach((text, index) => {
@@ -634,12 +679,13 @@
                     .trim();
 
                 const tone = toneLabels[index] || `Opção ${index + 1}`;
+                const iconHtml = toneIcons[index] || '<i class="fa-solid fa-wand-magic-sparkles"></i>';
 
                 const card = document.createElement('div');
                 card.className = 'grok-card';
                 card.innerHTML = `
                     <div class="grok-card-header">
-                        <div class="grok-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <div class="grok-icon">${iconHtml}</div>
                         <span class="grok-badge">Tom: ${tone}</span>
                         <span class="grok-tone">Helpzap AI</span>
                     </div>
@@ -913,15 +959,21 @@ Instruções:
             }
         });
 
-        // Tema Claro / Escuro
-        const btnToggleTheme = document.getElementById('btnToggleTheme');
-        btnToggleTheme.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const icon = btnToggleTheme.querySelector('i');
-            if (document.body.classList.contains('dark-mode')) {
-                btnToggleTheme.innerHTML = '<i class="fa-solid fa-sun"></i> Modo Claro';
-            } else {
-                btnToggleTheme.innerHTML = '<i class="fa-solid fa-moon"></i> Modo Escuro';
+        const docsModal = document.getElementById('docsModal');
+        const btnOpenDocsModal = document.getElementById('btnOpenDocsModal');
+        const btnCloseDocsModal = document.getElementById('btnCloseDocsModal');
+
+        btnOpenDocsModal.addEventListener('click', () => {
+            docsModal.classList.add('open');
+        });
+
+        btnCloseDocsModal.addEventListener('click', () => {
+            docsModal.classList.remove('open');
+        });
+
+        docsModal.addEventListener('click', (e) => {
+            if (e.target === docsModal) {
+                docsModal.classList.remove('open');
             }
         });
 
