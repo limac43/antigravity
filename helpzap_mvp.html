@@ -98,9 +98,9 @@
         .dynamic-fields { display: none; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
         .dynamic-field { flex: 1; min-width: 200px; }
         .btn-generate { 
-            background: #1c1c1c; color: white; border: none; border-radius: 8px; 
+            background: var(--primary); color: white; border: none; border-radius: 8px; 
             padding: 1rem 2rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; 
-            width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: none; 
+            width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: block; 
         }
         body.dark-mode .btn-generate { background: var(--primary); }
         .btn-generate:hover { background: #333333; transform: translateY(-1px); }
@@ -668,7 +668,7 @@
                 grokResults.appendChild(card);
             });
 
-            grokResults.style.display = 'flex';
+            grokResults.style.display = 'grid';
         }
 
         /* =========================================
@@ -695,7 +695,6 @@
         scenarioSelect.addEventListener('change', (e) => {
             const scenario = e.target.value;
             checklistAlert.style.display = 'block';
-            outputContainer.style.display = 'none';
             dynamicFieldsContainer.innerHTML = '';
 
             const fieldsRequired = scenarioFieldsMap[scenario];
@@ -704,7 +703,6 @@
                     dynamicFieldsContainer.innerHTML += fieldsHtml[fieldKey];
                 });
                 dynamicFieldsContainer.style.display = 'flex';
-                btnGenerate.style.display = 'block';
             }
         });
 
@@ -714,6 +712,12 @@
             const servico = servicoEspecificoSelect.value;
 
             validationAlert.style.display = 'none';
+
+            if (!scenario) {
+                validationAlert.innerText = "Por favor, selecione um cenário de atendimento.";
+                validationAlert.style.display = 'block';
+                return;
+            }
 
             if (!area) {
                 validationAlert.innerText = "Por favor, selecione a Área de Serviço.";
@@ -850,6 +854,14 @@ Instruções:
                 grokError.style.display = 'block';
             }
         });
+
+        // Trigger change no carregamento para restaurar campos se o navegador fez auto-fill
+        if (scenarioSelect.value) {
+            scenarioSelect.dispatchEvent(new Event('change'));
+        }
+        if (areaServicoSelect.value) {
+            areaServicoSelect.dispatchEvent(new Event('change'));
+        }
 
         btnCopyPrompt.addEventListener('click', async () => {
             try {
