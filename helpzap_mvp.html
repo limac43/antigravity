@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helpzap - Gerador de Respostas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b);
+            --card-bg: rgba(30, 41, 59, 0.65);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --prompt-bg: rgba(99, 102, 241, 0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main);
+            min-height: 100vh; display: flex; justify-content: center; padding: 2rem; line-height: 1.6;
+        }
+        .container {
+            background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border);
+            border-radius: 24px; padding: 3rem; width: 100%; max-width: 900px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .container::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(to right, #c084fc, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
+        .header p { color: var(--text-muted); font-size: 1.1rem; }
+        .form-section { background: rgba(15, 23, 42, 0.5); padding: 2rem; border-radius: 16px; border: 1px solid var(--card-border); margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label { display: block; font-size: 0.95rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+        .form-select, .form-input { width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: var(--text-main); padding: 0.8rem 1rem; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: all 0.3s ease; }
+        .form-select:focus, .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+        .form-select option { background: #0f172a; color: #fff; }
+        .form-select:disabled { opacity: 0.6; cursor: not-allowed; }
+        .dynamic-fields { display: none; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .dynamic-field { flex: 1; min-width: 200px; }
+        .btn-generate { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; border-radius: 8px; padding: 1rem 2rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: none; }
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+        .results-section { display: none; flex-direction: column; gap: 1rem; margin-bottom: 2rem;}
+        .result-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem; position: relative; transition: all 0.2s ease; }
+        .result-card:hover { border-color: rgba(99, 102, 241, 0.5); background: rgba(15, 23, 42, 0.8); }
+        .phrase-text { font-size: 1.05rem; line-height: 1.6; color: #e2e8f0; padding-right: 3rem; }
+        .btn-copy-sm { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255, 255, 255, 0.1); color: var(--accent); border: none; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 1.2rem; }
+        .btn-copy-sm:hover { background: var(--primary); color: white; transform: scale(1.1); }
+        .btn-copy-sm.success { background: var(--success); color: white; }
+        .checklist-alert { background: rgba(16, 185, 129, 0.1); border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1rem; margin-bottom: 2rem; display: none; }
+        .checklist-alert h4 { color: var(--success); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .checklist-alert ul { padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .alert-box { background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; font-weight: 500; text-align: center; }
+        
+        .section-title { font-size: 1.3rem; font-weight: 600; color: var(--accent); margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;}
+        
+        .prompt-container { background: var(--prompt-bg); border: 1px solid var(--primary); border-radius: 12px; padding: 1.5rem; position: relative; }
+        .prompt-text { font-family: monospace; font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; white-space: pre-wrap; padding-right: 3rem; }
+        .prompt-btn-copy { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .prompt-btn-copy:hover { background: var(--primary-hover); }
+
+        /* =========================================
+           GROK IA — Estilos da integração
+           ========================================= */
+        .grok-section-title {
+            font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3); padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            background: linear-gradient(to right, #c084fc, #22d3ee);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .grok-section-title i {
+            -webkit-text-fill-color: var(--accent);
+        }
+
+        .grok-loading {
+            display: none; flex-direction: column; align-items: center;
+            padding: 2.5rem 1rem; gap: 1rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .grok-spinner {
+            width: 48px; height: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.08);
+            border-left-color: var(--accent); border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .grok-loading-text {
+            color: var(--accent); font-size: 1rem; font-weight: 500;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .grok-error {
+            display: none;
+            background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px; padding: 1rem 1.5rem; margin-top: 0.5rem;
+            color: #fca5a5; font-weight: 500; text-align: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .grok-results {
+            display: none; flex-direction: column; gap: 1rem; margin-top: 0.5rem;
+        }
+
+        .grok-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid transparent;
+            border-radius: 14px; padding: 1.5rem;
+            position: relative;
+            transition: all 0.25s ease;
+            background-clip: padding-box;
+            overflow: hidden;
+        }
+        .grok-card::before {
+            content: ''; position: absolute; inset: 0;
+            border-radius: 14px; padding: 1px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(34, 211, 238, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .grok-card:hover {
+            background: rgba(15, 23, 42, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.2);
+        }
+
+        .grok-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .grok-badge {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            background: linear-gradient(135deg, var(--primary), rgba(34, 211, 238, 0.8));
+            color: white; font-size: 0.7rem; font-weight: 700;
+            padding: 0.2rem 0.6rem; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .grok-tone {
+            color: var(--text-muted); font-size: 0.8rem; font-style: italic;
+        }
+
+        .grok-phrase {
+            font-size: 1.05rem; line-height: 1.7; color: #e2e8f0;
+            padding-right: 0;
+        }
+
+        .grok-card-footer {
+            display: flex; justify-content: flex-end; margin-top: 1rem;
+        }
+        .btn-copy-grok {
+            background: linear-gradient(135deg, var(--primary), rgba(34, 211, 238, 0.6));
+            color: white; border: none; border-radius: 8px;
+            padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 0.4rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-copy-grok:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.5);
+        }
+        .btn-copy-grok.success {
+            background: var(--success);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap</h1>
+            <p>Selecione o cenário, gere as respostas rápidas ou crie o prompt para sua IA externa</p>
+        </div>
+
+        <div class="checklist-alert" id="checklistAlert">
+            <h4><i class="fa-solid fa-clipboard-check"></i> Checklist de 30 segundos:</h4>
+            <ul>
+                <li>O cliente já mandou print, protocolo ou convênio? Não peça de novo.</li>
+                <li>Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?</li>
+                <li>Se são vários chamados do mesmo cliente, consolidou numa mensagem só?</li>
+                <li>Explicou por que está pedindo o ticket, ou só mandou pedir?</li>
+            </ul>
+        </div>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label class="form-label" for="apiKeyInput"><i class="fa-solid fa-key"></i> Chave da API (Groq)</label>
+                <input type="password" id="apiKeyInput" class="form-input" value="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" placeholder="Insira sua chave gsk_... para testar" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="scenarioSelect"><i class="fa-solid fa-list"></i> Qual é o cenário do atendimento?</label>
+                <select id="scenarioSelect" class="form-select">
+                    <option value="" disabled selected>Selecione uma opção...</option>
+                    <option value="1">1 - Chamado(s) priorizado(s)</option>
+                    <option value="2">2 - Chamado em atendimento</option>
+                    <option value="3">3 - Segunda cobrança</option>
+                    <option value="4">4 - Zerinho finalizou, cliente discorda</option>
+                    <option value="5">5 - Relato sem ticket aberto</option>
+                    <option value="6">6 - Cliente recusa abrir ticket</option>
+                    <option value="7">7 - Informação nova em ticket aberto (Mensagem Interna)</option>
+                    <option value="8">8 - Solicitação de contato telefônico</option>
+                    <option value="9">9 - Instabilidade sistêmica (Incidente)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 1rem;">
+                <div style="flex: 1;">
+                    <label class="form-label" for="areaServico"><i class="fa-solid fa-building"></i> Área de Serviço</label>
+                    <select id="areaServico" class="form-select">
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Operadoras">Operadoras</option>
+                        <option value="Núcleos">Núcleos</option>
+                        <option value="A confirmar">A confirmar (Geral)</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label" for="servicoEspecifico"><i class="fa-solid fa-briefcase"></i> Serviço Específico</label>
+                    <select id="servicoEspecifico" class="form-select" disabled>
+                        <option value="">Selecione a área primeiro...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="dynamic-fields" id="dynamicFields">
+                <!-- Inputs dinâmicos de ticket/contexto aparecerão aqui -->
+            </div>
+
+            <div class="alert-box" id="validationAlert">Por favor, preencha a Área de Serviço antes de prosseguir.</div>
+
+            <button class="btn-generate" id="btnGenerate">Carregar Respostas & Prompt</button>
+        </div>
+
+        <div id="outputContainer" style="display: none;">
+            <div class="section-title"><i class="fa-solid fa-comments"></i> Respostas Rápidas (Base Local)</div>
+            <div class="results-section" id="resultsSection" style="display: flex;">
+                <!-- Cards de frases geradas via JS -->
+            </div>
+
+            <!-- ====== SEÇÃO GROQ IA ====== -->
+            <div class="grok-section-title"><i class="fa-solid fa-brain"></i> Respostas Inteligentes (Groq Llama 3)</div>
+
+            <div class="grok-loading" id="grokLoading">
+                <div class="grok-spinner"></div>
+                <div class="grok-loading-text">Consultando Groq IA para gerar respostas personalizadas...</div>
+            </div>
+
+            <div class="grok-error" id="grokError"></div>
+
+            <div class="grok-results" id="grokResults">
+                <!-- Cards de respostas Grok gerados via JS -->
+            </div>
+            <!-- ====== FIM SEÇÃO GROQ IA ====== -->
+
+            <div class="section-title" style="margin-top: 2rem;"><i class="fa-solid fa-robot"></i> Estrutura Pronta para IA Externa (ChatGPT / Claude / etc)</div>
+            <div class="prompt-container">
+                <div class="prompt-text" id="promptText"></div>
+                <button class="prompt-btn-copy" id="btnCopyPrompt">
+                    <i class="fa-regular fa-copy"></i> Copiar Prompt para IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+         *  GROQ API — Configuração
+         * ========================================= */
+        const GROQ_MODEL = 'groq/compound';
+
+        const GROQ_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente, auxiliando analistas de suporte da ZG Soluções. Seu papel é gerar mensagens prontas para envio no WhatsApp, com tom profissional, empático e humano.`;
+
+        /* =========================================
+         *  DADOS E CONSTANTES DO APLICATIVO
+         * ========================================= */
+        const AREAS_SERVICO = {
+            "Operadoras": [
+                "Atualização de crédito",
+                "Envio de Recurso",
+                "Acesso ao ZG",
+                "Gestão de Recebimentos"
+            ],
+            "Núcleos": [
+                "Atualização de faturados",
+                "Problema com recurso de glosa",
+                "Problemas de quitação",
+                "Conciliação",
+                "Problema com Relatórios"
+            ]
+        };
+
+        const phraseDatabase = {
+            "1": [
+                "Olá {nome}! Passando para informar que sua solicitação {ticketId} sobre {context} já passou pela nossa triagem e foi priorizada. Nossa equipe já está acompanhando.",
+                "Tudo certo por aqui, {nome}. O chamado {ticketId} foi devidamente priorizado e a nossa equipe técnica já está ciente da urgência para {context}.",
+                "Olá! Já verifiquei o seu ticket {ticketId} e o coloquei como prioridade na fila de atendimento para agilizarmos a tratativa de {context}.",
+                "Passando para confirmar que a sua solicitação {ticketId} foi pré-validada e já está na nossa fila de prioridades para {context}.",
+                "Olá {nome}! Já realizei a triagem inicial do seu ticket {ticketId} e o direcionei para a fila de prioridades para ganharmos tempo na análise de {context}."
+            ],
+            "2": [
+                "Olá {nome}! Passando para atualizar que o analista responsável já assumiu o ticket {ticketId} e está analisando o seu caso.",
+                "Tudo bem? O seu chamado {ticketId} já está em atendimento. A equipe técnica está focada na análise e logo trará um posicionamento.",
+                "A equipe técnica já iniciou a análise do seu chamado {ticketId}. Assim que tivermos novidades, o retorno será feito diretamente no ticket.",
+                "Olá {nome}! O seu chamado {ticketId} mudou para o status 'Em atendimento'. O analista está validando os detalhes do serviço {servicoEspecifico} e retornará assim que possível.",
+                "O analista responsável já está atuando no ticket {ticketId}. Por favor, acompanhe o chamado, pois o retorno oficial será enviado por lá."
+            ],
+            "3": [
+                "Compreendo perfeitamente a urgência, {nome}. Já acionei o analista responsável e pedi prioridade total no retorno do ticket {ticketId}.",
+                "Entendo a sua necessidade. Já conversei com a equipe e solicitei agilidade no retorno do ticket {ticketId}. Eles já estão cientes da urgência.",
+                "Pode deixar comigo. Já reforcei com o analista que está conduzindo o ticket {ticketId} para que ele acelere o retorno para você.",
+                "Compreendo a preocupação. Já acionei o setor responsável para o ticket {ticketId} e solicitei prioridade máxima na formulação da resposta.",
+                "O responsável pelo chamado {ticketId} já está ciente da sua urgência e vai priorizar a resposta. Sigo acompanhando por aqui."
+            ],
+            "4": [
+                "Verifiquei que o nosso bot (Zerinho) finalizou o chamado {ticketId}. Como a questão persiste, peço que reabra o ticket para que nossa equipe assuma a análise.",
+                "Olá {nome}! O chamado {ticketId} foi fechado pelo Zerinho, mas se a dúvida não foi resolvida, basta reabrir o ticket que nós assumiremos por aqui.",
+                "O Zerinho realizou o fechamento, mas caso você não concorde com a resolução do ticket {ticketId}, por favor, reabra o chamado para analisarmos os detalhes.",
+                "Olá! Como o atendimento inicial foi feito pelo Zerinho e ele finalizou, a melhor forma de prosseguirmos é você reabrir o chamado {ticketId} para que a equipe humana atue.",
+                "Para que possamos analisar a situação de forma humanizada, preciso que você reabra o ticket {ticketId}. Após isso, nossa equipe cuidará do restante."
+            ],
+            "5": [
+                "Olá, {nome}! Antes de abrirmos um chamado, preciso confirmar: qual painel exatamente você está usando referente a {context}? Poderia me enviar um print da tela inteira?",
+                "Tudo bem, {nome}? Para eu conseguir simular a situação de {context} antes de abrirmos um ticket, qual é o caminho exato do erro? Me envie um print completo.",
+                "Olá, {nome}! Deixe-me fazer uma investigação inicial sobre {context} antes de acionar a equipe. Poderia enviar um print para que eu veja os filtros aplicados?",
+                "{nome}, para eu realizar uma pré-validação e agilizar o processo de {context}, preciso ver a sua visão da tela. Se possível, envie a tela inteira.",
+                "Olá, {nome}! Para sermos mais precisos na análise de {context}, peço que envie um print da tela toda. Tentarei simular a situação aqui primeiro."
+            ],
+            "6": [
+                "{nome}, para facilitar e poupar o seu tempo, já realizei a abertura do chamado em seu nome (nº {ticketId}). A equipe técnica dará continuidade.",
+                "Olá, {nome}! Para que você não tenha esse trabalho, eu mesmo abri o ticket {ticketId} para registrar o caso de {context}.",
+                "Para agilizarmos e não interrompermos seu fluxo, {nome}, já registrei o ticket {ticketId}. Nossa equipe utilizará essas informações para validar a situação.",
+                "{nome}, não se preocupe com o chamado, eu já realizei a abertura para você: ticket {ticketId}. Por favor, acompanhe, pois a equipe técnica o atualizará por lá.",
+                "{nome}, entendo que o processo de abrir chamado pode ser inconveniente. Para evitar transtornos, criei o ticket {ticketId} e o retorno será enviado nele."
+            ],
+            "7": [
+                "Olá, equipe. Complementei o ticket {ticketId} com algumas informações que recebi no WhatsApp. Por favor, verifiquem as mensagens internas para mais detalhes.",
+                "Aviso rápido: adicionei mais evidências no ticket {ticketId} com base no que o cliente enviou por WhatsApp. Os dados estão na mensagem interna.",
+                "Incluí uma anotação interna no ticket {ticketId} com detalhes adicionais fornecidos pelo cliente no privado. Isso ajudará na análise do caso.",
+                "O cliente do ticket {ticketId} enviou mais contexto pelo WhatsApp. Já registrei tudo de forma interna para auxiliar na investigação de vocês.",
+                "Equipe, complementei o chamado {ticketId} com o contexto novo enviado via WhatsApp, que já se encontra na mensagem interna."
+            ],
+            "8": [
+                "Olá! Nosso analista precisa fazer um rápido contato telefônico referente ao ticket {ticketId} com {nomeContato}. Poderiam nos fornecer um número para contato?",
+                "Tudo bem? Gostaríamos de realizar um breve contato telefônico com {nomeContato} para avançarmos no chamado {ticketId}. Podem nos enviar um telefone, por favor?",
+                "Bom dia! Para resolvermos um detalhe do ticket {ticketId}, precisamos falar rapidamente por telefone com {nomeContato}. Vocês conseguem nos informar o número?",
+                "Olá equipe. Estamos atuando no chamado {ticketId} e nosso analista precisa alinhar um ponto por telefone com {nomeContato}. Poderiam nos passar o contato?",
+                "Para agilizar o atendimento do ticket {ticketId}, gostaríamos de falar com {nomeContato} por telefone. Como não localizamos o número, poderiam nos enviar?"
+            ],
+            "9": [
+                "Prezado(a) {nome}, informamos que a nossa equipe de infraestrutura já está ciente da instabilidade pontual em nosso sistema e está atuando na verificação para a pronta normalização. Assim que a plataforma for estabilizada, retornaremos o contato.",
+                "Olá {nome}! Nossa equipe técnica identificou uma instabilidade na plataforma e já iniciou as tratativas de correção. Agradecemos a compreensão enquanto trabalhamos na normalização e retornaremos em breve.",
+                "Olá {nome}. Confirmamos que o sistema encontra-se com uma instabilidade no momento. O time de infraestrutura já está focado na investigação e correção. Avisaremos assim que tudo estiver normalizado.",
+                "{nome}, a nossa equipe já está ciente da instabilidade e está atuando com prioridade máxima para a estabilização da plataforma ZG. Retornaremos com atualizações assim que tivermos um posicionamento técnico.",
+                "Tudo bem, {nome}? Estamos enfrentando uma instabilidade sistêmica, mas nossa equipe de infraestrutura já está atuando para reestabelecer o serviço o mais rápido possível. Agradecemos sua paciência e compreensão."
+            ]
+        };
+
+        const scenarioTextMap = {
+            "1": "Chamado(s) priorizado(s)",
+            "2": "Chamado em atendimento",
+            "3": "Segunda cobrança",
+            "4": "Zerinho finalizou, cliente discorda",
+            "5": "Relato sem ticket aberto",
+            "6": "Cliente recusa abrir ticket",
+            "7": "Informação nova em ticket aberto (Mensagem Interna)",
+            "8": "Solicitação de contato telefônico",
+            "9": "Instabilidade sistêmica (Incidente)"
+        };
+
+        const checklistText = `
+---
+📋 **Checklist de 30 segundos:**
+* O cliente já mandou print, protocolo ou convênio? Não peça de novo.
+* Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?
+* Se são vários chamados do mesmo cliente, consolidou numa mensagem só?
+* Explicou por que está pedindo o ticket, ou só mandou pedir?
+---`;
+
+        /* =========================================
+         *  REFERÊNCIAS DOM
+         * ========================================= */
+        const scenarioSelect = document.getElementById('scenarioSelect');
+        const areaServicoSelect = document.getElementById('areaServico');
+        const servicoEspecificoSelect = document.getElementById('servicoEspecifico');
+        const dynamicFieldsContainer = document.getElementById('dynamicFields');
+        const btnGenerate = document.getElementById('btnGenerate');
+        const outputContainer = document.getElementById('outputContainer');
+        const resultsSection = document.getElementById('resultsSection');
+        const checklistAlert = document.getElementById('checklistAlert');
+        const validationAlert = document.getElementById('validationAlert');
+        const promptText = document.getElementById('promptText');
+        const btnCopyPrompt = document.getElementById('btnCopyPrompt');
+
+        // Grok DOM
+        const grokLoading = document.getElementById('grokLoading');
+        const grokError = document.getElementById('grokError');
+        const grokResults = document.getElementById('grokResults');
+
+        const scenarioFieldsMap = {
+            "1": ["ticketId", "context", "nome"],
+            "2": ["ticketId", "nome"],
+            "3": ["ticketId", "nome"],
+            "4": ["ticketId", "nome"],
+            "5": ["context", "nome"],
+            "6": ["ticketId", "context", "nome"],
+            "7": ["ticketId"],
+            "8": ["ticketId", "nomeContato"],
+            "9": ["nome"]
+        };
+
+        const fieldsHtml = {
+            "ticketId": `
+                <div class="dynamic-field">
+                    <label class="form-label" for="input_ticketId">Ticket ID</label>
+                    <input type="text" id="input_ticketId" class="form-input" placeholder="Ex: 613448">
+                </div>`,
+            "context": `
+                <div class="dynamic-field">
+                    <label class="form-label" for="input_context">Contexto</label>
+                    <input type="text" id="input_context" class="form-input" placeholder="Ex: importação Bradesco">
+                </div>`,
+            "nome": `
+                <div class="dynamic-field">
+                    <label class="form-label" for="input_nome">Nome do Cliente</label>
+                    <input type="text" id="input_nome" class="form-input" placeholder="Ex: Carlos">
+                </div>`,
+            "nomeContato": `
+                <div class="dynamic-field">
+                    <label class="form-label" for="input_nomeContato">Nome de quem deseja falar</label>
+                    <input type="text" id="input_nomeContato" class="form-input" placeholder="Ex: Ana Cristina">
+                </div>`
+        };
+
+        /* =========================================
+         *  GROQ API — Função de chamada
+         * ========================================= */
+        async function callGroqAPI(userPrompt) {
+            const userKey = document.getElementById('apiKeyInput').value.trim();
+            if (!userKey) {
+                throw new Error("Por favor, insira sua chave da API do Groq no topo da tela para usar a IA.");
+            }
+
+            const payload = {
+                model: GROQ_MODEL,
+                messages: [
+                    {
+                        role: "system",
+                        content: GROQ_SYSTEM_PROMPT
+                    },
+                    {
+                        role: "user",
+                        content: userPrompt
+                    }
+                ]
+            };
+
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userKey}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+                
+                if (errorData.error) {
+                    errorMessage = typeof errorData.error === 'string' 
+                        ? errorData.error 
+                        : (errorData.error.message || errorMessage);
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+            return await response.json();
+        }
+
+        /**
+         * Extrai o texto da resposta da API do Grok.
+         * Suporta tanto o formato "output" (Responses API) quanto "choices" (Chat Completions).
+         */
+        function extractGrokText(data) {
+            // Formato Responses API: data.output contém array de items
+            if (data.output && Array.isArray(data.output)) {
+                for (const item of data.output) {
+                    if (item.type === 'message' && item.content) {
+                        for (const block of item.content) {
+                            if (block.type === 'output_text' && block.text) {
+                                return block.text;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Formato Chat Completions: data.choices[0].message.content
+            if (data.choices && data.choices.length > 0) {
+                return data.choices[0].message?.content || '';
+            }
+
+            // Fallback: tenta output_text direto
+            if (data.output_text) {
+                return data.output_text;
+            }
+
+            throw new Error('Formato de resposta do Grok não reconhecido.');
+        }
+
+        /**
+         * Divide o texto do Grok em opções individuais.
+         * Tenta vários padrões: "Opção 1:", "1.", "1)", "**Opção 1**", separadores ---
+         */
+        function parseGrokOptions(fullText) {
+            // Tenta split por padrões comuns de numeração
+            const patterns = [
+                /(?:^|\n)\s*\*{0,2}Opção\s*\d+\*{0,2}\s*[-:.]?\s*/gi,
+                /(?:^|\n)\s*\*{0,2}Resposta\s*\d+\*{0,2}\s*[-:.]?\s*/gi,
+                /(?:^|\n)\s*\d+[\.\)\-]\s*/g,
+                /\n-{3,}\n/g
+            ];
+
+            for (const pattern of patterns) {
+                const parts = fullText.split(pattern).map(s => s.trim()).filter(s => s.length > 20);
+                if (parts.length >= 3) {
+                    return parts.slice(0, 3);
+                }
+            }
+
+            // Se nenhum padrão funcionou, tenta dividir por parágrafos duplos
+            const paragraphs = fullText.split(/\n\n+/).map(s => s.trim()).filter(s => s.length > 20);
+            if (paragraphs.length >= 3) {
+                return paragraphs.slice(0, 3);
+            }
+
+            // Último recurso: retorna o texto inteiro como uma única opção
+            return [fullText.trim()];
+        }
+
+        /**
+         * Renderiza os cards de resposta do Grok na tela
+         */
+        function renderGrokCards(options) {
+            const toneLabels = ['🎩 Tom Formal', '⚡ Tom Direto', '💛 Tom Acolhedor'];
+            grokResults.innerHTML = '';
+
+            options.forEach((text, index) => {
+                // Limpa marcações markdown residuais do texto
+                let cleanText = text
+                    .replace(/^\*{1,2}(.*?)\*{1,2}$/gm, '$1')  // Remove bold markers em linhas inteiras
+                    .replace(/\*\*(.*?)\*\*/g, '$1')             // Remove bold inline
+                    .trim();
+
+                const tone = toneLabels[index] || `📝 Opção ${index + 1}`;
+
+                const card = document.createElement('div');
+                card.className = 'grok-card';
+                card.innerHTML = `
+                    <div class="grok-card-header">
+                        <span class="grok-badge"><i class="fa-solid fa-bolt"></i> Groq IA</span>
+                        <span class="grok-tone">${tone}</span>
+                    </div>
+                    <div class="grok-phrase">${cleanText}</div>
+                    <div class="grok-card-footer">
+                        <button class="btn-copy-grok" title="Copiar esta resposta">
+                            <i class="fa-regular fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                `;
+
+                // Evento de copiar
+                const btnCopy = card.querySelector('.btn-copy-grok');
+                btnCopy.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(cleanText);
+                        btnCopy.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                        btnCopy.classList.add('success');
+                        setTimeout(() => {
+                            btnCopy.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
+                            btnCopy.classList.remove('success');
+                        }, 2000);
+                    } catch (err) {
+                        alert('Erro ao copiar.');
+                    }
+                });
+
+                grokResults.appendChild(card);
+            });
+
+            grokResults.style.display = 'flex';
+        }
+
+        /* =========================================
+         *  EVENT LISTENERS
+         * ========================================= */
+        areaServicoSelect.addEventListener('change', function() {
+            const area = this.value;
+            servicoEspecificoSelect.innerHTML = '<option value="">Selecione...</option>';
+            
+            if (area === 'A confirmar' || !area) {
+                servicoEspecificoSelect.disabled = true;
+                return;
+            }
+            
+            servicoEspecificoSelect.disabled = false;
+            AREAS_SERVICO[area].forEach(servico => {
+                const opt = document.createElement('option');
+                opt.value = servico;
+                opt.textContent = servico;
+                servicoEspecificoSelect.appendChild(opt);
+            });
+        });
+
+        scenarioSelect.addEventListener('change', (e) => {
+            const scenario = e.target.value;
+            checklistAlert.style.display = 'block';
+            outputContainer.style.display = 'none';
+            dynamicFieldsContainer.innerHTML = '';
+
+            const fieldsRequired = scenarioFieldsMap[scenario];
+            if(fieldsRequired) {
+                fieldsRequired.forEach(fieldKey => {
+                    dynamicFieldsContainer.innerHTML += fieldsHtml[fieldKey];
+                });
+                dynamicFieldsContainer.style.display = 'flex';
+                btnGenerate.style.display = 'block';
+            }
+        });
+
+        btnGenerate.addEventListener('click', async () => {
+            const scenario = scenarioSelect.value;
+            const area = areaServicoSelect.value;
+            const servico = servicoEspecificoSelect.value;
+
+            validationAlert.style.display = 'none';
+
+            if (!area) {
+                validationAlert.innerText = "Por favor, selecione a Área de Serviço.";
+                validationAlert.style.display = 'block';
+                return;
+            }
+
+            const fieldsRequired = scenarioFieldsMap[scenario];
+            let values = {};
+            let userContextLines = [];
+            
+            fieldsRequired.forEach(fieldKey => {
+                const el = document.getElementById(`input_${fieldKey}`);
+                let val = el ? el.value.trim() : '';
+                
+                if (val === '') {
+                    if (fieldKey === 'nome') val = 'Cliente';
+                    else val = `[${fieldKey}]`;
+                } else {
+                    userContextLines.push(`${fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1)}: ${val}`);
+                }
+                
+                values[fieldKey] = val;
+            });
+            values['servicoEspecifico'] = servico || 'Geral';
+
+            resultsSection.innerHTML = '';
+
+            // ==============================
+            // 1) Renderizar respostas da base local (imediato)
+            // ==============================
+            const phrases = phraseDatabase[scenario];
+            phrases.forEach((phraseTpl) => {
+                let finalPhrase = phraseTpl;
+                for(let key in values) {
+                    const regex = new RegExp(`{${key}}`, 'g');
+                    let displayVal = values[key];
+                    if(key === 'nome' && displayVal === 'Cliente') {
+                        finalPhrase = finalPhrase.replace(regex, '').replace('Olá !', 'Olá!').replace(' ,', ',').replace('  ', ' ');
+                    } else {
+                        finalPhrase = finalPhrase.replace(regex, displayVal);
+                    }
+                }
+                
+                finalPhrase = finalPhrase.replace(/ {2,}/g, ' ').trim();
+
+                const cardHtml = `
+                    <div class="result-card">
+                        <div class="phrase-text">${finalPhrase}</div>
+                        <button class="btn-copy-sm" title="Copiar Frase + Checklist">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                `;
+                resultsSection.innerHTML += cardHtml;
+            });
+
+            // Gerar o prompt para IA externa (e para o Grok)
+            const userContextStr = userContextLines.length > 0 ? userContextLines.join("\n") : "Nenhum detalhe extra preenchido.";
+            
+            const promptExternal = `Você é um assistente virtual de atendimento ao cliente, auxiliando analistas de suporte da ZG Soluções.
+Por favor, gere 3 opções de respostas amigáveis, humanizadas e resolutivas para eu enviar ao meu cliente no WhatsApp.
+
+Aqui estão os dados do atendimento atual:
+- Cenário: ${scenarioTextMap[scenario]}
+- Área de Serviço: ${area}
+- Serviço Específico: ${servico || 'Não aplicável'}
+
+Detalhes preenchidos:
+${userContextStr}
+
+Instruções:
+- Seja claro, objetivo e empático.
+- Não invente informações, nomes, prazos ou ferramentas que não mencionei.
+- Não mencione nomes de responsáveis internos, refira-se à "equipe técnica" ou "setor responsável".
+- Ofereça tons variados nas respostas (ex: uma mais formal, uma mais direta, uma mais acolhedora).
+- Não coloque saudações genéricas no topo, retorne apenas os textos das mensagens prontos para envio.
+- Jamais diga que o chamado será resolvido agora, prefira tons como "em breve daremos um retorno".
+- Os retornos sempre serão realizados através do próprio chamado.`;
+
+            promptText.innerText = promptExternal;
+            outputContainer.style.display = 'block';
+
+            // Eventos de copiar da base local
+            document.querySelectorAll('.btn-copy-sm').forEach((btn) => {
+                btn.addEventListener('click', async (e) => {
+                    const btnTarget = e.currentTarget;
+                    const phraseTxt = btnTarget.previousElementSibling.innerText;
+                    
+                    const textToCopy = phraseTxt + "\n" + checklistText;
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+                        const icon = btnTarget.querySelector('i');
+                        icon.className = 'fa-solid fa-check';
+                        btnTarget.classList.add('success');
+                        setTimeout(() => {
+                            icon.className = 'fa-regular fa-copy';
+                            btnTarget.classList.remove('success');
+                        }, 2000);
+                    } catch(err) {
+                        alert('Erro ao copiar.');
+                    }
+                });
+            });
+
+            // ==============================
+            // 2) Chamar Grok IA em paralelo
+            // ==============================
+            grokLoading.style.display = 'flex';
+            grokError.style.display = 'none';
+            grokResults.style.display = 'none';
+            grokResults.innerHTML = '';
+
+            // Scroll suave até a seção
+            grokLoading.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            try {
+                const grokData = await callGroqAPI(promptExternal);
+                const fullText = extractGrokText(grokData);
+                const options = parseGrokOptions(fullText);
+
+                grokLoading.style.display = 'none';
+                renderGrokCards(options);
+
+                // Scroll suave até os resultados do Groq
+                grokResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (error) {
+                grokLoading.style.display = 'none';
+                grokError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Erro ao consultar Groq IA: ${error.message}`;
+                grokError.style.display = 'block';
+            }
+        });
+
+        btnCopyPrompt.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(promptText.innerText);
+                const originalHtml = btnCopyPrompt.innerHTML;
+                btnCopyPrompt.innerHTML = '<i class="fa-solid fa-check"></i> Prompt Copiado!';
+                btnCopyPrompt.style.background = 'var(--success)';
+                
+                setTimeout(() => {
+                    btnCopyPrompt.innerHTML = originalHtml;
+                    btnCopyPrompt.style.background = '';
+                }, 2000);
+            } catch (err) {
+                alert('Erro ao copiar o prompt.');
+            }
+        });
+
+    </script>
+</body>
+</html>
