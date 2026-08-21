@@ -8,77 +8,118 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b);
-            --card-bg: rgba(30, 41, 59, 0.65);
-            --card-border: rgba(255, 255, 255, 0.1);
+            --bg-body: #f4f3ee;
+            --card-bg: #ffffff;
+            --card-border: rgba(0, 0, 0, 0.05);
             --primary: #6366f1;
             --primary-hover: #4f46e5;
+            --accent: #8b5cf6;
+            --text-main: #1a1a1a;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
+            --prompt-bg: #f8fafc;
+            --navbar-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --btn-copy-bg: #ffffff;
+            --btn-copy-border: #e5e7eb;
+            --card-hover: #fafafa;
+        }
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
             --accent: #22d3ee;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --success: #10b981;
-            --danger: #ef4444;
-            --prompt-bg: rgba(99, 102, 241, 0.1);
+            --prompt-bg: #0f172a;
+            --navbar-bg: #1e293b;
+            --input-bg: #0f172a;
+            --input-border: rgba(255, 255, 255, 0.2);
+            --btn-copy-bg: #334155;
+            --btn-copy-border: #475569;
+            --card-hover: #0f172a;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', sans-serif; background: var(--bg-gradient); color: var(--text-main);
-            min-height: 100vh; display: flex; justify-content: center; padding: 2rem; line-height: 1.6;
+            font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main);
+            min-height: 100vh; padding-top: 80px; padding-bottom: 2rem; line-height: 1.6;
+            display: flex; flex-direction: column; align-items: center; transition: background 0.3s, color 0.3s;
         }
-        .container {
-            background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border);
-            border-radius: 24px; padding: 3rem; width: 100%; max-width: 900px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden;
-            display: flex; flex-direction: column;
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: var(--navbar-bg); border-bottom: 1px solid var(--card-border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: background 0.3s;
         }
-        .container::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
+        .navbar-brand { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .navbar-brand i { color: var(--text-main); }
+        .navbar-menu { display: flex; gap: 1rem; }
+        .nav-btn {
+            background: transparent; border: 1px solid var(--card-border); padding: 0.5rem 1rem;
+            border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); font-family: 'Inter', sans-serif;
         }
-        .header { text-align: center; margin-bottom: 2.5rem; }
-        .header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(to right, #c084fc, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
-        .header p { color: var(--text-muted); font-size: 1.1rem; }
-        .form-section { background: rgba(15, 23, 42, 0.5); padding: 2rem; border-radius: 16px; border: 1px solid var(--card-border); margin-bottom: 2rem; }
+        .nav-btn:hover { background: var(--card-hover); border-color: var(--card-border); }
+
+        /* Container & Header */
+        .header { text-align: center; margin: 3rem 0; }
+        .badge-top {
+            display: inline-block; border: 1px solid var(--card-border); border-radius: 20px;
+            padding: 0.3rem 0.8rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1.5rem;
+            background: rgba(0,0,0,0.02);
+        }
+        .header h1 { font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -1px; line-height: 1.1; }
+        .header h1 span { color: var(--text-muted); font-weight: 500; display: block; }
+        .header p { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 1rem auto; }
+        
+        .container { width: 100%; max-width: 800px; margin: 0 auto; }
+
+        /* Form */
+        .form-section { background: var(--card-bg); padding: 2rem; border-radius: 16px; border: 1px solid var(--card-border); margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.02); transition: background 0.3s; }
         .form-group { margin-bottom: 1.5rem; }
         .form-group:last-child { margin-bottom: 0; }
-        .form-label { display: block; font-size: 0.95rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
-        .form-select, .form-input { width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: var(--text-main); padding: 0.8rem 1rem; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: all 0.3s ease; }
-        .form-select:focus, .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
-        .form-select option { background: #0f172a; color: #fff; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; }
+        .form-select, .form-input { 
+            width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-main); 
+            padding: 0.8rem 1rem; border-radius: 8px; font-family: 'Inter', sans-serif; 
+            font-size: 0.95rem; outline: none; transition: all 0.2s ease; 
+        }
+        .form-select:focus, .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(28, 28, 28, 0.1); }
         .form-select:disabled { opacity: 0.6; cursor: not-allowed; }
+        .form-select option { background: var(--input-bg); color: var(--text-main); }
+        
         .dynamic-fields { display: none; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
         .dynamic-field { flex: 1; min-width: 200px; }
-        .btn-generate { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; border-radius: 8px; padding: 1rem 2rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: none; }
-        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
-        .results-section { display: none; flex-direction: column; gap: 1rem; margin-bottom: 2rem;}
-        .result-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.5rem; position: relative; transition: all 0.2s ease; }
-        .result-card:hover { border-color: rgba(99, 102, 241, 0.5); background: rgba(15, 23, 42, 0.8); }
-        .phrase-text { font-size: 1.05rem; line-height: 1.6; color: #e2e8f0; padding-right: 3rem; }
-        .btn-copy-sm { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255, 255, 255, 0.1); color: var(--accent); border: none; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 1.2rem; }
-        .btn-copy-sm:hover { background: var(--primary); color: white; transform: scale(1.1); }
-        .btn-copy-sm.success { background: var(--success); color: white; }
-        .checklist-alert { background: rgba(16, 185, 129, 0.1); border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1rem; margin-bottom: 2rem; display: none; }
-        .checklist-alert h4 { color: var(--success); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .checklist-alert ul { padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; }
-        .alert-box { background: rgba(239, 68, 68, 0.1); border: 1px dashed rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; font-weight: 500; text-align: center; }
-        
-        .section-title { font-size: 1.3rem; font-weight: 600; color: var(--accent); margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;}
-        
-        .prompt-container { background: var(--prompt-bg); border: 1px solid var(--primary); border-radius: 12px; padding: 1.5rem; position: relative; }
-        .prompt-text { font-family: monospace; font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; white-space: pre-wrap; padding-right: 3rem; }
-        .prompt-btn-copy { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .prompt-btn-copy:hover { background: var(--primary-hover); }
+        .btn-generate { 
+            background: #1c1c1c; color: white; border: none; border-radius: 8px; 
+            padding: 1rem 2rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; 
+            width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: none; 
+        }
+        body.dark-mode .btn-generate { background: var(--primary); }
+        .btn-generate:hover { background: #333333; transform: translateY(-1px); }
+        body.dark-mode .btn-generate:hover { background: var(--primary-hover); }
 
-        /* =========================================
-           SIDEBAR RESPOSTAS LOCAIS
-           ========================================= */
+        /* Checklist & Alerts */
+        .checklist-alert { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: none; transition: background 0.3s; }
+        .checklist-alert h4 { color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+        .checklist-alert ul { padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .alert-box { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; font-weight: 500; text-align: center; }
+        body.dark-mode .alert-box { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+
+        /* Sidebar (Respostas Locais) */
         .sidebar {
-            position: fixed; top: 0; left: 0; width: 420px; max-width: 90%; height: 100vh;
-            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px);
-            border-right: 1px solid var(--card-border);
-            padding: 2rem; overflow-y: auto; z-index: 1000;
-            transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            position: fixed; top: 70px; right: 0; width: 420px; max-width: 100%; height: calc(100vh - 70px);
+            background: var(--card-bg); border-left: 1px solid var(--card-border);
+            padding: 2rem; overflow-y: auto; z-index: 900;
+            transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
             display: flex; flex-direction: column;
         }
         .sidebar.open { transform: translateX(0); }
@@ -86,137 +127,133 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;
         }
-        .sidebar-title { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+        .sidebar-title { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
         .btn-close-sidebar {
             background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem;
             cursor: pointer; transition: color 0.2s;
         }
         .btn-close-sidebar:hover { color: var(--danger); }
-        .btn-toggle-sidebar {
-            position: fixed; left: 0; top: 50%; transform: translateY(-50%);
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white; border: none; padding: 1.5rem 0.6rem; border-radius: 0 12px 12px 0;
-            cursor: pointer; z-index: 999; display: none; box-shadow: 4px 0 15px rgba(0,0,0,0.4);
-            writing-mode: vertical-rl; text-orientation: mixed; font-weight: 600; font-size: 0.95rem;
-            transition: all 0.2s ease; letter-spacing: 1px;
-        }
-        .btn-toggle-sidebar:hover { padding-right: 1rem; }
-        .btn-toggle-sidebar i { margin-bottom: 0.5rem; transform: rotate(90deg); }
+        
+        .result-card { background: var(--card-hover); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; position: relative; transition: all 0.2s ease; margin-bottom: 1rem; }
+        .phrase-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); padding-right: 2rem; }
+        .btn-copy-sm { position: absolute; top: 1rem; right: 1rem; background: var(--btn-copy-bg); border: 1px solid var(--btn-copy-border); color: var(--text-muted); border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+        .btn-copy-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-copy-sm.success { background: var(--success); color: white; border-color: var(--success); }
 
-        /* =========================================
-           GROK IA — Estilos da integração
-           ========================================= */
-        .grok-section-title {
-            font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.3); padding-bottom: 0.5rem;
-            margin-top: 2rem;
-            background: linear-gradient(to right, #c084fc, #22d3ee);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 0.5rem;
+        /* Modal Prompt IA Externa */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center;
         }
-        .grok-section-title i {
-            -webkit-text-fill-color: var(--accent);
+        .modal-overlay.open { display: flex; }
+        .modal-content {
+            background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 600px;
+            padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; transition: background 0.3s;
         }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
+        .prompt-container { background: var(--prompt-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 1.5rem; max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; transition: background 0.3s; }
+        .prompt-text { font-family: monospace; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); white-space: pre-wrap; }
+        .prompt-btn-copy { background: #1c1c1c; color: white; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
+        body.dark-mode .prompt-btn-copy { background: var(--primary); }
+        .prompt-btn-copy:hover { background: #333333; }
+        body.dark-mode .prompt-btn-copy:hover { background: var(--primary-hover); }
 
+        /* IA Results Container (3 Columns) */
+        #aiResultsWrapper {
+            width: 100%; max-width: 1200px; margin: 0 auto; display: none; padding: 0 2rem;
+        }
         .grok-loading {
             display: none; flex-direction: column; align-items: center;
-            padding: 2.5rem 1rem; gap: 1rem;
-            animation: fadeIn 0.3s ease-out;
+            padding: 4rem 1rem; gap: 1.5rem; width: 100%;
         }
         .grok-spinner {
-            width: 48px; height: 48px;
-            border: 3px solid rgba(255, 255, 255, 0.08);
-            border-left-color: var(--accent); border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            width: 40px; height: 40px;
+            border: 3px solid var(--card-border); border-top-color: var(--primary);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
         }
-        .grok-loading-text {
-            color: var(--accent); font-size: 1rem; font-weight: 500;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
+        .grok-loading-text { color: var(--text-muted); font-size: 1rem; font-weight: 500; }
+        
         .grok-error {
-            display: none;
-            background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px; padding: 1rem 1.5rem; margin-top: 0.5rem;
-            color: #fca5a5; font-weight: 500; text-align: center;
-            animation: slideIn 0.3s ease-out;
+            display: none; background: #fee2e2; border: 1px solid #fecaca;
+            border-radius: 12px; padding: 1rem 1.5rem; margin: 2rem auto; max-width: 600px;
+            color: #b91c1c; font-weight: 500; text-align: center;
         }
+        body.dark-mode .grok-error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
 
         .grok-results {
-            display: none; flex-direction: column; gap: 1rem; margin-top: 0.5rem;
+            display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2rem;
+        }
+        @media (min-width: 768px) {
+            .grok-results { grid-template-columns: repeat(3, 1fr); }
         }
 
         .grok-card {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid transparent;
-            border-radius: 14px; padding: 1.5rem;
-            position: relative;
-            transition: all 0.25s ease;
-            background-clip: padding-box;
-            overflow: hidden;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 2rem; position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; transition: background 0.3s;
         }
-        .grok-card::before {
-            content: ''; position: absolute; inset: 0;
-            border-radius: 14px; padding: 1px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(34, 211, 238, 0.5));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
+        .grok-card-header { margin-bottom: 1.5rem; }
+        .grok-icon {
+            width: 48px; height: 48px; background: #f3e8ff; color: var(--accent);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1rem;
         }
-        .grok-card:hover {
-            background: rgba(15, 23, 42, 0.9);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.2);
-        }
-
-        .grok-card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .grok-badge {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            background: linear-gradient(135deg, var(--primary), rgba(34, 211, 238, 0.8));
-            color: white; font-size: 0.7rem; font-weight: 700;
-            padding: 0.2rem 0.6rem; border-radius: 20px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .grok-tone {
-            color: var(--text-muted); font-size: 0.8rem; font-style: italic;
-        }
-
-        .grok-phrase {
-            font-size: 1.05rem; line-height: 1.7; color: #e2e8f0;
-            padding-right: 0;
-        }
-
-        .grok-card-footer {
-            display: flex; justify-content: flex-end; margin-top: 1rem;
-        }
+        body.dark-mode .grok-icon { background: rgba(139, 92, 246, 0.1); }
+        .grok-badge { font-weight: 700; font-size: 1.1rem; color: var(--text-main); display: block; margin-bottom: 0.2rem; }
+        .grok-tone { color: var(--text-muted); font-size: 0.85rem; }
+        
+        .grok-phrase { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); flex-grow: 1; margin-bottom: 1.5rem; }
+        
         .btn-copy-grok {
-            background: linear-gradient(135deg, var(--primary), rgba(34, 211, 238, 0.6));
-            color: white; border: none; border-radius: 8px;
-            padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease;
-            display: flex; align-items: center; gap: 0.4rem;
+            background: var(--btn-copy-bg); border: 1px solid var(--btn-copy-border); color: var(--text-main);
+            border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;
             font-family: 'Inter', sans-serif;
         }
-        .btn-copy-grok:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.5);
-        }
-        .btn-copy-grok.success {
-            background: var(--success);
-        }
+        .btn-copy-grok:hover { background: var(--card-hover); }
+        .btn-copy-grok.success { background: var(--success); color: white; border-color: var(--success); }
+
+
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- Botão lateral para abrir respostas rápidas -->
-    <button class="btn-toggle-sidebar" id="btnToggleSidebar">
-        <i class="fa-solid fa-comments"></i> RESPOSTAS LOCAIS
-    </button>
+    <!-- Navbar Superior -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap AI
+        </div>
+        <div class="navbar-menu">
+            <button class="nav-btn" id="btnToggleTheme" title="Alternar Tema Escuro">
+                <i class="fa-solid fa-moon"></i> Modo Escuro
+            </button>
+            <button class="nav-btn" id="btnToggleSidebar" style="display: none;">
+                <i class="fa-solid fa-comments"></i> Respostas Locais
+            </button>
+            <button class="nav-btn" id="btnOpenPromptModal" style="display: none;">
+                <i class="fa-solid fa-code"></i> Prompt IA Externa
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modal Prompt IA Externa -->
+    <div class="modal-overlay" id="promptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Estrutura Pronta para IA Externa</div>
+                <button class="btn-close-sidebar" id="btnClosePromptModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="prompt-container">
+                <div class="prompt-text" id="promptText"></div>
+            </div>
+            <button class="prompt-btn-copy" id="btnCopyPrompt">
+                <i class="fa-regular fa-copy"></i> Copiar Prompt para IA
+            </button>
+        </div>
+    </div>
 
     <!-- Menu Lateral Esquerdo -->
     <aside class="sidebar" id="localSidebar">
@@ -231,8 +268,9 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap</h1>
-            <p>Selecione o cenário, gere as respostas rápidas ou crie o prompt para sua IA externa</p>
+            <span class="badge-top">AJUDE SEU CLIENTE MAIS RÁPIDO</span>
+            <h1>Respostas que conectam.<br><span>Seu cliente percebe a diferença.</span></h1>
+            <p>Selecione o cenário, carregue o contexto e deixe a IA gerar o tom perfeito para a sua comunicação.</p>
         </div>
 
         <div class="checklist-alert" id="checklistAlert">
@@ -246,11 +284,6 @@
         </div>
         
         <div class="form-section">
-            <div class="form-group">
-                <label class="form-label" for="apiKeyInput"><i class="fa-solid fa-key"></i> Chave da API (Groq)</label>
-                <input type="password" id="apiKeyInput" class="form-input" value="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" placeholder="Insira sua chave gsk_... para testar" autocomplete="off">
-            </div>
-
             <div class="form-group">
                 <label class="form-label" for="scenarioSelect"><i class="fa-solid fa-list"></i> Qual é o cenário do atendimento?</label>
                 <select id="scenarioSelect" class="form-select">
@@ -291,32 +324,20 @@
 
             <div class="alert-box" id="validationAlert">Por favor, preencha a Área de Serviço antes de prosseguir.</div>
 
-            <button class="btn-generate" id="btnGenerate">Carregar Respostas & Prompt</button>
+            <button class="btn-generate" id="btnGenerate">Gerar</button>
+        </div>
+    </div> <!-- Fim Container -->
+
+    <div id="aiResultsWrapper">
+        <div class="grok-loading" id="grokLoading">
+            <div class="grok-spinner"></div>
+            <div class="grok-loading-text">Consultando Helpzap AI para gerar respostas personalizadas...</div>
         </div>
 
-        <div id="outputContainer" style="display: none;">
-            <!-- ====== SEÇÃO GROQ IA ====== -->
-            <div class="grok-section-title"><i class="fa-solid fa-brain"></i> Respostas Inteligentes (Groq Llama 3)</div>
+        <div class="grok-error" id="grokError"></div>
 
-            <div class="grok-loading" id="grokLoading">
-                <div class="grok-spinner"></div>
-                <div class="grok-loading-text">Consultando Groq IA para gerar respostas personalizadas...</div>
-            </div>
-
-            <div class="grok-error" id="grokError"></div>
-
-            <div class="grok-results" id="grokResults">
-                <!-- Cards de respostas Grok gerados via JS -->
-            </div>
-            <!-- ====== FIM SEÇÃO GROQ IA ====== -->
-
-            <div class="section-title" style="margin-top: 2rem;"><i class="fa-solid fa-robot"></i> Estrutura Pronta para IA Externa (ChatGPT / Claude / etc)</div>
-            <div class="prompt-container">
-                <div class="prompt-text" id="promptText"></div>
-                <button class="prompt-btn-copy" id="btnCopyPrompt">
-                    <i class="fa-regular fa-copy"></i> Copiar Prompt para IA
-                </button>
-            </div>
+        <div class="grok-results" id="grokResults">
+            <!-- Cards de respostas Helpzap AI gerados via JS -->
         </div>
     </div>
 
@@ -493,7 +514,7 @@
          *  GROQ API — Função de chamada
          * ========================================= */
         async function callGroqAPI(userPrompt) {
-            const userKey = document.getElementById('apiKeyInput').value.trim();
+            const userKey = "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";
             if (!userKey) {
                 throw new Error("Por favor, insira sua chave da API do Groq no topo da tela para usar a IA.");
             }
@@ -602,7 +623,7 @@
          * Renderiza os cards de resposta do Grok na tela
          */
         function renderGrokCards(options) {
-            const toneLabels = ['🎩 Tom Formal', '⚡ Tom Direto', '💛 Tom Acolhedor'];
+            const toneLabels = ['Formal', 'Direto', 'Acolhedor'];
             grokResults.innerHTML = '';
 
             options.forEach((text, index) => {
@@ -612,21 +633,20 @@
                     .replace(/\*\*(.*?)\*\*/g, '$1')             // Remove bold inline
                     .trim();
 
-                const tone = toneLabels[index] || `📝 Opção ${index + 1}`;
+                const tone = toneLabels[index] || `Opção ${index + 1}`;
 
                 const card = document.createElement('div');
                 card.className = 'grok-card';
                 card.innerHTML = `
                     <div class="grok-card-header">
-                        <span class="grok-badge"><i class="fa-solid fa-bolt"></i> Groq IA</span>
-                        <span class="grok-tone">${tone}</span>
+                        <div class="grok-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <span class="grok-badge">Tom: ${tone}</span>
+                        <span class="grok-tone">Helpzap AI</span>
                     </div>
                     <div class="grok-phrase">${cleanText}</div>
-                    <div class="grok-card-footer">
-                        <button class="btn-copy-grok" title="Copiar esta resposta">
-                            <i class="fa-regular fa-copy"></i> Copiar
-                        </button>
-                    </div>
+                    <button class="btn-copy-grok" title="Copiar esta resposta">
+                        <i class="fa-regular fa-copy"></i> Copiar
+                    </button>
                 `;
 
                 // Evento de copiar
@@ -775,8 +795,9 @@ Instruções:
 - Os retornos sempre serão realizados através do próprio chamado.`;
 
             promptText.innerText = promptExternal;
-            outputContainer.style.display = 'block';
-            document.getElementById('btnToggleSidebar').style.display = 'block';
+            document.getElementById('aiResultsWrapper').style.display = 'block';
+            document.getElementById('btnToggleSidebar').style.display = 'flex';
+            document.getElementById('btnOpenPromptModal').style.display = 'flex';
 
             // Eventos de copiar da base local
             document.querySelectorAll('.btn-copy-sm').forEach((btn) => {
@@ -801,7 +822,7 @@ Instruções:
             });
 
             // ==============================
-            // 2) Chamar Grok IA em paralelo
+            // 2) Chamar Helpzap AI (Groq) em paralelo
             // ==============================
             grokLoading.style.display = 'flex';
             grokError.style.display = 'none';
@@ -809,7 +830,7 @@ Instruções:
             grokResults.innerHTML = '';
 
             // Scroll suave até a seção
-            grokLoading.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            document.getElementById('aiResultsWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             try {
                 const grokData = await callGroqAPI(promptExternal);
@@ -817,14 +838,15 @@ Instruções:
                 const options = parseGrokOptions(fullText);
 
                 grokLoading.style.display = 'none';
+                grokResults.style.display = 'grid';
                 renderGrokCards(options);
 
                 // Scroll suave até os resultados do Groq
-                grokResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('aiResultsWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             } catch (error) {
                 grokLoading.style.display = 'none';
-                grokError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Erro ao consultar Groq IA: ${error.message}`;
+                grokError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Erro ao consultar Helpzap AI: ${error.message}`;
                 grokError.style.display = 'block';
             }
         });
@@ -846,7 +868,7 @@ Instruções:
         });
 
         // ==============================
-        // Controle da Sidebar
+        // Controle da Sidebar e Modais
         // ==============================
         const localSidebar = document.getElementById('localSidebar');
         const btnToggleSidebar = document.getElementById('btnToggleSidebar');
@@ -858,6 +880,37 @@ Instruções:
 
         btnCloseSidebar.addEventListener('click', () => {
             localSidebar.classList.remove('open');
+        });
+
+        const promptModal = document.getElementById('promptModal');
+        const btnOpenPromptModal = document.getElementById('btnOpenPromptModal');
+        const btnClosePromptModal = document.getElementById('btnClosePromptModal');
+
+        btnOpenPromptModal.addEventListener('click', () => {
+            promptModal.classList.add('open');
+        });
+
+        btnClosePromptModal.addEventListener('click', () => {
+            promptModal.classList.remove('open');
+        });
+
+        // Fechar modal ao clicar fora
+        promptModal.addEventListener('click', (e) => {
+            if (e.target === promptModal) {
+                promptModal.classList.remove('open');
+            }
+        });
+
+        // Tema Claro / Escuro
+        const btnToggleTheme = document.getElementById('btnToggleTheme');
+        btnToggleTheme.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = btnToggleTheme.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                btnToggleTheme.innerHTML = '<i class="fa-solid fa-sun"></i> Modo Claro';
+            } else {
+                btnToggleTheme.innerHTML = '<i class="fa-solid fa-moon"></i> Modo Escuro';
+            }
         });
 
     </script>
