@@ -3,998 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helpzap - Gerador de Respostas</title>
+    <title>Helpzap AI - Manual Command</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-body: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: rgba(255, 255, 255, 0.1);
+            --bg-sidebar: #0A101D;
+            --bg-main: #0B1121;
+            --card-bg: #111827;
+            --card-border: rgba(255, 255, 255, 0.08);
             --primary: #1ed760;
             --primary-hover: #1fdf64;
-            --accent: #22d3ee;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --success: #10b981;
             --danger: #ef4444;
-            --prompt-bg: #0f172a;
-            --navbar-bg: #1e293b;
-            --input-bg: #0f172a;
-            --input-border: rgba(255, 255, 255, 0.2);
-            --btn-copy-bg: #334155;
-            --btn-copy-border: #475569;
-            --card-hover: #0f172a;
+            --success-bg: rgba(30, 215, 96, 0.1);
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main);
-            min-height: 100vh; padding-top: 80px; padding-bottom: 2rem; line-height: 1.6;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        /* Navbar */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; height: 70px;
-            background: var(--navbar-bg); border-bottom: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 2rem; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            transition: background 0.3s;
-        }
-        .navbar-brand { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
-        .navbar-brand i { color: var(--text-main); }
-        .navbar-menu { display: flex; gap: 1rem; }
-        .nav-btn {
-            background: transparent; border: 1px solid var(--card-border); padding: 0.5rem 1rem;
-            border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); font-family: 'Inter', sans-serif;
-        }
-        .nav-btn:hover { background: var(--card-hover); border-color: var(--card-border); }
-
-        /* Container & Header */
-        .header { text-align: center; margin: 3rem 0; }
-        .badge-top {
-            display: inline-block; border: 1px solid var(--card-border); border-radius: 20px;
-            padding: 0.3rem 0.8rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1.5rem;
-            background: rgba(0,0,0,0.02);
-        }
-        .header h1 { font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -1px; line-height: 1.1; }
-        .header h1 span { color: var(--text-muted); font-weight: 500; display: block; }
-        .header p { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 1rem auto; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
         
-        .container { width: 100%; max-width: 800px; margin: 0 auto; }
-
-        /* Form */
-        .form-section { background: var(--card-bg); padding: 2rem; border-radius: 16px; border: 1px solid var(--card-border); margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.02); transition: background 0.3s; }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group:last-child { margin-bottom: 0; }
-        .form-label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; }
-        .form-select, .form-input { 
-            width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-main); 
-            padding: 0.8rem 1rem; border-radius: 8px; font-family: 'Inter', sans-serif; 
-            font-size: 0.95rem; outline: none; transition: all 0.2s ease; 
-        }
-        .form-select:focus, .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(28, 28, 28, 0.1); }
-        .form-select:disabled { opacity: 0.6; cursor: not-allowed; }
-        .form-select option { background: var(--input-bg); color: var(--text-main); }
+        .dashboard-layout { display: flex; width: 100%; height: 100%; }
         
-        .dynamic-fields { display: none; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
-        .dynamic-field { flex: 1; min-width: 200px; }
-        .btn-generate { 
-            background: var(--primary); color: white; border: none; border-radius: 8px; 
-            padding: 1rem 2rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; 
-            width: 100%; margin-top: 1.5rem; transition: all 0.2s ease; display: block; 
-        }
-        body.dark-mode .btn-generate { background: var(--primary); }
-        .btn-generate:hover { background: #333333; transform: translateY(-1px); }
-        body.dark-mode .btn-generate:hover { background: var(--primary-hover); }
-
-        /* Checklist & Alerts */
-        .checklist-alert { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: none; transition: background 0.3s; }
-        .checklist-alert h4 { color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
-        .checklist-alert ul { padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; }
-        .alert-box { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: none; font-weight: 500; text-align: center; }
-        body.dark-mode .alert-box { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
-
-        /* Sidebar (Respostas Locais) */
-        .sidebar {
-            position: fixed; top: 70px; right: 0; width: 420px; max-width: 100%; height: calc(100vh - 70px);
-            background: var(--card-bg); border-left: 1px solid var(--card-border);
-            padding: 2rem; overflow-y: auto; z-index: 900;
-            transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column;
-        }
-        .sidebar.open { transform: translateX(0); }
-        .sidebar-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;
-        }
-        .sidebar-title { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
-        .btn-close-sidebar {
-            background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem;
-            cursor: pointer; transition: color 0.2s;
-        }
-        .btn-close-sidebar:hover { color: var(--danger); }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 1.5rem; flex-shrink: 0; }
+        .sidebar-brand { font-size: 1.25rem; font-weight: 700; color: white; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 2rem; }
+        .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .result-card { background: var(--card-hover); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; position: relative; transition: all 0.2s ease; margin-bottom: 1rem; }
-        .phrase-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); padding-right: 2rem; }
-        .btn-copy-sm { position: absolute; top: 1rem; right: 1rem; background: var(--btn-copy-bg); border: 1px solid var(--btn-copy-border); color: var(--text-muted); border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
-        .btn-copy-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .btn-copy-sm.success { background: var(--success); color: white; border-color: var(--success); }
-
-        /* Modal Prompt IA Externa */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-content {
-            background: var(--card-bg); border-radius: 16px; width: 90%; max-width: 600px;
-            padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; transition: background 0.3s;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
-        .prompt-container { background: var(--prompt-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 1.5rem; max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; transition: background 0.3s; }
-        .prompt-text { font-family: monospace; font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); white-space: pre-wrap; }
-        .prompt-btn-copy { background: #1c1c1c; color: white; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
-        body.dark-mode .prompt-btn-copy { background: var(--primary); }
-        .prompt-btn-copy:hover { background: #333333; }
-        body.dark-mode .prompt-btn-copy:hover { background: var(--primary-hover); }
-
-        /* IA Results Container (3 Columns) */
-        #aiResultsWrapper {
-            width: 100%; max-width: 1200px; margin: 0 auto; display: none; padding: 0 2rem;
-        }
-        .grok-loading {
-            display: none; flex-direction: column; align-items: center;
-            padding: 4rem 1rem; gap: 1.5rem; width: 100%;
-        }
-        .grok-spinner {
-            width: 40px; height: 40px;
-            border: 3px solid var(--card-border); border-top-color: var(--primary);
-            border-radius: 50%; animation: spin 0.8s linear infinite;
-        }
-        .grok-loading-text { color: var(--text-muted); font-size: 1rem; font-weight: 500; }
+        .btn-new-analysis { background: var(--primary); color: #0A101D; font-weight: 600; border: none; border-radius: 8px; padding: 0.75rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s; margin-bottom: 2rem; font-family: inherit; }
+        .btn-new-analysis:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,215,96,0.2); }
+        .btn-new-analysis:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .grok-error {
-            display: none; background: #fee2e2; border: 1px solid #fecaca;
-            border-radius: 12px; padding: 1rem 1.5rem; margin: 2rem auto; max-width: 600px;
-            color: #b91c1c; font-weight: 500; text-align: center;
-        }
-        body.dark-mode .grok-error { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
-
-        .grok-results {
-            display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2rem;
-        }
-        @media (min-width: 768px) {
-            .grok-results { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        .grok-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 16px; padding: 2rem; position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            display: flex; flex-direction: column; transition: background 0.3s;
-        }
-        .grok-card-header { margin-bottom: 1.5rem; }
-        .grok-icon {
-            width: 48px; height: 48px; background: #f3e8ff; color: var(--accent);
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; margin-bottom: 1rem;
-        }
-        body.dark-mode .grok-icon { background: rgba(139, 92, 246, 0.1); }
-        .grok-badge { font-weight: 700; font-size: 1.1rem; color: var(--text-main); display: block; margin-bottom: 0.2rem; }
-        .grok-tone { color: var(--text-muted); font-size: 0.85rem; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s; font-size: 0.95rem; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+        .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item i { font-size: 1.1rem; width: 20px; }
         
-        .grok-phrase { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); flex-grow: 1; margin-bottom: 1.5rem; }
+        .sidebar-footer { border-top: 1px solid var(--card-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
         
-        .btn-copy-grok {
-            background: var(--btn-copy-bg); border: 1px solid var(--btn-copy-border); color: var(--text-main);
-            border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.9rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;
-            font-family: 'Inter', sans-serif;
-        }
-        .btn-copy-grok:hover { background: var(--card-hover); }
-        .btn-copy-grok.success { background: var(--success); color: white; border-color: var(--success); }
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
+        .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+        .top-header h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .top-header .subtitle { color: var(--text-muted); font-size: 1rem; }
+        
+        /* Grid Layout */
+        .results-grid { display: grid; grid-template-columns: 400px 1fr; gap: 2rem; }
+        .col-left { display: flex; flex-direction: column; gap: 1.5rem; }
+        .col-right { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        /* Cards */
+        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: white; display: flex; align-items: center; gap: 0.5rem; }
+        .card-body { padding: 1.5rem; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .form-input, .form-select { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); color: white; border-radius: 8px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); background: rgba(30,215,96,0.05); }
+        .form-select option { background: var(--bg-main); color: white; }
+        .form-select:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Response Area */
+        .card-scenario { display: flex; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 12px; background: rgba(30, 215, 96, 0.03); margin-bottom: 1.5rem; }
+        .scenario-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--success-bg); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 1.25rem; flex-shrink: 0; }
+        .scenario-label { color: var(--primary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.25rem; text-transform: uppercase; }
+        .scenario-content h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .scenario-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
 
-
+        .card-response { flex: 1; display: flex; flex-direction: column; }
+        .response-text { font-size: 1.05rem; line-height: 1.7; color: #e2e8f0; flex: 1; white-space: pre-wrap; padding: 1.5rem; min-height: 250px; }
+        .tag-green { background: var(--success-bg); color: var(--primary); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+        .card-response .card-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--card-border); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.1); }
+        
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; gap: 1rem; }
+        .empty-state i { font-size: 3rem; opacity: 0.5; }
+        
+        .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 17, 33, 0.8); backdrop-filter: blur(4px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: 12px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(30, 215, 96, 0.3); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="dark-mode">
-
-    <!-- Navbar Superior -->
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap AI
-        </div>
-        <div class="navbar-menu">
-            <button class="nav-btn" id="btnOpenDocsModal" title="Documentação">
-                <i class="fa-solid fa-book"></i> Documentação
-            </button>
-            <button class="nav-btn" id="btnToggleSidebar" style="display: none;">
-                <i class="fa-solid fa-comments"></i> Respostas Locais
-            </button>
-            <button class="nav-btn" id="btnOpenPromptModal" style="display: none;">
-                <i class="fa-solid fa-code"></i> Prompt IA Externa
-            </button>
-        </div>
-    </nav>
-
-    <!-- Modal Prompt IA Externa -->
-    <div class="modal-overlay" id="promptModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Estrutura Pronta para IA Externa</div>
-                <button class="btn-close-sidebar" id="btnClosePromptModal"><i class="fa-solid fa-xmark"></i></button>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Helpzap AI</div>
+                <span class="sidebar-subtitle">Manual Command</span>
             </div>
-            <div class="prompt-container">
-                <div class="prompt-text" id="promptText"></div>
-            </div>
-            <button class="prompt-btn-copy" id="btnCopyPrompt">
-                <i class="fa-regular fa-copy"></i> Copiar Prompt para IA
+            
+            <button class="btn-new-analysis" id="btnGenerate" disabled>
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Resposta
             </button>
-        </div>
-    </div>
-
-    <!-- Modal Documentação -->
-    <div class="modal-overlay" id="docsModal">
-        <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-book"></i> Documentação ZG</div>
-                <button class="btn-close-sidebar" id="btnCloseDocsModal"><i class="fa-solid fa-xmark"></i></button>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+                <a href="#" class="nav-item" onclick="window.location.href='Helpzap/helpzap_mvp.html'"><i class="fa-regular fa-image"></i> Auto Analysis</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item"><i class="fa-solid fa-book"></i> Docs</a>
             </div>
-            <div class="prompt-container" style="flex: 1; overflow-y: auto; text-align: left; max-height: unset;">
-                <div class="prompt-text" style="color: var(--text-main); font-family: 'Inter', sans-serif;">
-                    <h3>Chamados priorizados.</h3>
-                    <p>1° Informamos que a sua solicitação já passou pela nossa triagem inicial:</p>
-                    <p>🎟️ Validação do Ticket: O chamado *n°ticket* foi devidamente validado e priorizado em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
-                    <br>
-                    <p>2° Gostaríamos de informar que o seu atendimento recebeu um direcionamento especial pela nossa equipe:</p>
-                    <p>⚡ Priorização: O chamado *n°ticket* foi devidamente priorizado em nossa fila de atendimento.</p>
-                    <p>🕵️ Atribuição: O analista responsável pela demanda já foi notificado sobre a urgência do chamado.</p>
-                    <br>
-                    <p>3°Informamos que as suas solicitações passaram pela nossa triagem inicial e foram atualizadas:</p>
-                    <p>🎟️ Tickets Validados e Priorizados: *n°dos tickets*</p>
-                    <p>🚀 Andamento: Todas as demandas foram devidamente priorizadas em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
-                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-header">
+                <div>
+                    <h2>Support Command</h2>
+                    <p class="subtitle">Geração manual de respostas contextuais</p>
+                </div>
+            </div>
+
+            <div id="errorMsg" style="display:none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; color: #fca5a5; margin-bottom: 1rem; text-align: center;"></div>
+
+            <div class="results-grid">
+                <!-- Left Column: Form -->
+                <div class="col-left">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fa-solid fa-sliders"></i> Contexto do Chamado</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group" id="apiKeyContainer">
+                                <label class="form-label"><i class="fa-solid fa-key"></i> Chave da API</label>
+                                <input type="password" id="apiKeyInput" class="form-input" placeholder="Cole sua API Key do Gemini..." autocomplete="off">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa-solid fa-list"></i> Cenário</label>
+                                <select id="scenarioSelect" class="form-select">
+                                    <option value="" disabled selected>Selecione um cenário...</option>
+                                    <option value="1">Chamado(s) priorizado(s)</option>
+                                    <option value="2">Chamado em atendimento</option>
+                                    <option value="3">Segunda cobrança</option>
+                                    <option value="4">Zerinho finalizou, cliente discorda</option>
+                                    <option value="5">Relato sem ticket aberto</option>
+                                    <option value="6">Cliente recusa abrir ticket</option>
+                                    <option value="7">Info nova em ticket aberto (Mensagem Interna)</option>
+                                    <option value="8">Solicitação de contato telefônico</option>
+                                    <option value="9">Instabilidade sistêmica (Incidente)</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label"><i class="fa-solid fa-building"></i> Área</label>
+                                    <select id="areaServico" class="form-select">
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="Operadoras">Operadoras</option>
+                                        <option value="Núcleos">Núcleos</option>
+                                        <option value="A confirmar">A confirmar</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label"><i class="fa-solid fa-briefcase"></i> Serviço</label>
+                                    <select id="servicoEspecifico" class="form-select" disabled>
+                                        <option value="">Selecione a área...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="dynamicFields">
+                                <!-- Preenchido via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Result -->
+                <div class="col-right" style="position: relative;">
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                        <div style="color: var(--primary); font-weight: 500;">Gerando resposta perfeita...</div>
+                    </div>
+
+                    <div id="resultContent" style="display: none; animation: fadeIn 0.4s ease; height: 100%; display: flex; flex-direction: column;">
+                        <div class="card-scenario">
+                            <div class="scenario-icon"><i class="fa-solid fa-robot"></i></div>
+                            <div class="scenario-content">
+                                <div class="scenario-label">CONTEXTO IDENTIFICADO</div>
+                                <h3 id="resultScenarioTitle">...</h3>
+                                <p id="resultScenarioDesc">A IA ajustou o tom e a estrutura para se adequar ao cenário escolhido.</p>
+                            </div>
+                        </div>
+
+                        <div class="card card-response">
+                            <div class="card-header">
+                                <span class="card-title"><i class="fa-solid fa-list-check"></i> Suggested Response</span>
+                            </div>
+                            <div class="card-body response-text" id="responseText">
+                                <!-- Texto Aqui -->
+                            </div>
+                            <div class="card-footer">
+                                <button id="btnCopyResult" class="btn-new-analysis" style="margin: 0; padding: 0.6rem 1.2rem;"><i class="fa-regular fa-copy"></i> Copiar Resposta</button>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <h3>Quando o chamado que o cliente pediu prioridade se encontra “Em Atendimento”.</h3>
-                    <p>4° Passando para te avisar que o chamado *n°ticket* já se encontra em atendimento! 👩‍💻</p>
-                    <p>🚀 O analista responsável já está analisando o seu caso e logo mais trará um posicionamento direto no ticket.</p>
-                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
-
-                    <h3>Quando o cliente realiza uma segunda cobrança</h3>
-                    <p>5° Já informamos ao analista responsável que você precisa de um retorno urgente sobre este chamado. Ele já está ciente e, em breve, vai te responder diretamente no ticket com todas as validações concluídas, combinado?</p>
-                    <p>Qualquer dúvida, sigo à disposição por aqui!</p>
-                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
-
-                    <h3>Quando o cliente solicita prioridade e o Zerinho finalizou o ticket</h3>
-                    <p>6° Verificamos que o zerinho finalizou o chamado e caso você não esteja de acordo ou a sua dúvida ainda não tenha sido totalmente resolvida, é só realizar a reabertura do ticket que a nossa equipe assume a solicitação para fazer todas as validações necessárias.</p>
+                    <div class="card" id="emptyState" style="height: 100%;">
+                        <div class="empty-state">
+                            <i class="fa-regular fa-comment-dots"></i>
+                            <div>
+                                <h3 style="color: white; margin-bottom: 0.5rem;">Pronto para analisar</h3>
+                                <p>Preencha os dados ao lado e clique em<br>Gerar Resposta.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Menu Lateral Esquerdo -->
-    <aside class="sidebar" id="localSidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title"><i class="fa-solid fa-comments"></i> Respostas Rápidas</div>
-            <button class="btn-close-sidebar" id="btnCloseSidebar"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="results-section" id="resultsSection" style="display: flex; flex-direction: column; gap: 1rem;">
-            <!-- Cards de frases geradas via JS -->
-        </div>
-    </aside>
-
-    <div class="container">
-        <div class="header">
-            <span class="badge-top">AJUDE SEU CLIENTE MAIS RÁPIDO</span>
-            <h1>Respostas que conectam.<br><span>Seu cliente percebe a diferença.</span></h1>
-            <p>Selecione o cenário, carregue o contexto e deixe a IA gerar o tom perfeito para a sua comunicação.</p>
-        </div>
-
-        <div class="checklist-alert" id="checklistAlert">
-            <h4><i class="fa-solid fa-clipboard-check"></i> Checklist de 30 segundos:</h4>
-            <ul>
-                <li>O cliente já mandou print, protocolo ou convênio? Não peça de novo.</li>
-                <li>Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?</li>
-                <li>Se são vários chamados do mesmo cliente, consolidou numa mensagem só?</li>
-                <li>Explicou por que está pedindo o ticket, ou só mandou pedir?</li>
-            </ul>
-        </div>
-        
-        <div class="form-section">
-            <div class="form-group">
-                <label class="form-label" for="apiKeyInput"><i class="fa-solid fa-key"></i> Chave da API do Gemini</label>
-                <input type="password" id="apiKeyInput" class="form-input" placeholder="Cole sua API Key do Google AI Studio aqui (ex: AIzaSy...)">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="scenarioSelect"><i class="fa-solid fa-list"></i> Qual é o cenário do atendimento?</label>
-                <select id="scenarioSelect" class="form-select">
-                    <option value="" disabled selected>Selecione uma opção...</option>
-                    <option value="1">1 - Chamado(s) priorizado(s)</option>
-                    <option value="2">2 - Chamado em atendimento</option>
-                    <option value="3">3 - Segunda cobrança</option>
-                    <option value="4">4 - Zerinho finalizou, cliente discorda</option>
-                    <option value="5">5 - Relato sem ticket aberto</option>
-                    <option value="6">6 - Cliente recusa abrir ticket</option>
-                    <option value="7">7 - Informação nova em ticket aberto (Mensagem Interna)</option>
-                    <option value="8">8 - Solicitação de contato telefônico</option>
-                    <option value="9">9 - Instabilidade sistêmica (Incidente)</option>
-                </select>
-            </div>
-
-            <div class="form-group" style="display: flex; gap: 1rem;">
-                <div style="flex: 1;">
-                    <label class="form-label" for="areaServico"><i class="fa-solid fa-building"></i> Área de Serviço</label>
-                    <select id="areaServico" class="form-select">
-                        <option value="" disabled selected>Selecione...</option>
-                        <option value="Operadoras">Operadoras</option>
-                        <option value="Núcleos">Núcleos</option>
-                        <option value="A confirmar">A confirmar (Geral)</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label class="form-label" for="servicoEspecifico"><i class="fa-solid fa-briefcase"></i> Serviço Específico</label>
-                    <select id="servicoEspecifico" class="form-select" disabled>
-                        <option value="">Selecione a área primeiro...</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="dynamic-fields" id="dynamicFields">
-                <!-- Inputs dinâmicos de ticket/contexto aparecerão aqui -->
-            </div>
-
-            <div class="alert-box" id="validationAlert">Por favor, preencha a Área de Serviço antes de prosseguir.</div>
-
-            <button class="btn-generate" id="btnGenerate">Gerar</button>
-        </div>
-    </div> <!-- Fim Container -->
-
-    <div id="aiResultsWrapper">
-        <div class="grok-loading" id="grokLoading">
-            <div class="grok-spinner"></div>
-            <div class="grok-loading-text">Consultando Helpzap AI para gerar respostas personalizadas...</div>
-        </div>
-
-        <div class="grok-error" id="grokError"></div>
-
-        <div class="grok-results" id="grokResults">
-            <!-- Cards de respostas Helpzap AI gerados via JS -->
-        </div>
+        </main>
     </div>
 
     <script type="module">
         import { GoogleGenAI } from 'https://esm.run/@google/genai';
 
-        /* =========================================
-         *  GEMINI API — Configuração
-         * ========================================= */
-        const GEMINI_MODEL = 'gemini-3.7-flash';
-        const GEMINI_API_KEY = '';
-
-        const GEMINI_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
-REGRAS OBRIGATÓRIAS DE FORMATAÇÃO:
-Sempre retorne EXATAMENTE 3 mensagens (Formal, Direto, Acolhedor).
-Você DEVE separar as 3 mensagens com a string exata "|||" (três barras verticais).
-NUNCA inclua títulos (ex: "Opção 1:", "Formal:"), introduções ou conclusões no texto gerado. Apenas o texto puro das 3 mensagens e o separador.`;
-
-        /* =========================================
-         *  DADOS E CONSTANTES DO APLICATIVO
-         * ========================================= */
         const AREAS_SERVICO = {
-            "Operadoras": [
-                "Atualização de crédito",
-                "Envio de Recurso",
-                "Acesso ao ZG",
-                "Gestão de Recebimentos"
-            ],
-            "Núcleos": [
-                "Atualização de faturados",
-                "Problema com recurso de glosa",
-                "Problemas de quitação",
-                "Conciliação",
-                "Problema com Relatórios"
-            ]
+            "Operadoras": ["Atualização de crédito", "Envio de Recurso", "Acesso ao ZG", "Gestão de Recebimentos"],
+            "Núcleos": ["Atualização de faturados", "Problema com recurso de glosa", "Problemas de quitação", "Conciliação", "Problema com Relatórios"]
         };
-
+        
         const phraseDatabase = {
-            "1": [
-                "Olá {nome}! Passando para informar que sua solicitação {ticketId} sobre {context} já passou pela nossa triagem e foi priorizada. Nossa equipe já está acompanhando.",
-                "Tudo certo por aqui, {nome}. O chamado {ticketId} foi devidamente priorizado e a nossa equipe técnica já está ciente da urgência para {context}.",
-                "Olá! Já verifiquei o seu ticket {ticketId} e o coloquei como prioridade na fila de atendimento para agilizarmos a tratativa de {context}.",
-                "Passando para confirmar que a sua solicitação {ticketId} foi pré-validada e já está na nossa fila de prioridades para {context}.",
-                "Olá {nome}! Já realizei a triagem inicial do seu ticket {ticketId} e o direcionei para a fila de prioridades para ganharmos tempo na análise de {context}."
-            ],
-            "2": [
-                "Olá {nome}! Passando para atualizar que o analista responsável já assumiu o ticket {ticketId} e está analisando o seu caso.",
-                "Tudo bem? O seu chamado {ticketId} já está em atendimento. A equipe técnica está focada na análise e logo trará um posicionamento.",
-                "A equipe técnica já iniciou a análise do seu chamado {ticketId}. Assim que tivermos novidades, o retorno será feito diretamente no ticket.",
-                "Olá {nome}! O seu chamado {ticketId} mudou para o status 'Em atendimento'. O analista está validando os detalhes do serviço {servicoEspecifico} e retornará assim que possível.",
-                "O analista responsável já está atuando no ticket {ticketId}. Por favor, acompanhe o chamado, pois o retorno oficial será enviado por lá."
-            ],
-            "3": [
-                "Compreendo perfeitamente a urgência, {nome}. Já acionei o analista responsável e pedi prioridade total no retorno do ticket {ticketId}.",
-                "Entendo a sua necessidade. Já conversei com a equipe e solicitei agilidade no retorno do ticket {ticketId}. Eles já estão cientes da urgência.",
-                "Pode deixar comigo. Já reforcei com o analista que está conduzindo o ticket {ticketId} para que ele acelere o retorno para você.",
-                "Compreendo a preocupação. Já acionei o setor responsável para o ticket {ticketId} e solicitei prioridade máxima na formulação da resposta.",
-                "O responsável pelo chamado {ticketId} já está ciente da sua urgência e vai priorizar a resposta. Sigo acompanhando por aqui."
-            ],
-            "4": [
-                "Verifiquei que o nosso bot (Zerinho) finalizou o chamado {ticketId}. Como a questão persiste, peço que reabra o ticket para que nossa equipe assuma a análise.",
-                "Olá {nome}! O chamado {ticketId} foi fechado pelo Zerinho, mas se a dúvida não foi resolvida, basta reabrir o ticket que nós assumiremos por aqui.",
-                "O Zerinho realizou o fechamento, mas caso você não concorde com a resolução do ticket {ticketId}, por favor, reabra o chamado para analisarmos os detalhes.",
-                "Olá! Como o atendimento inicial foi feito pelo Zerinho e ele finalizou, a melhor forma de prosseguirmos é você reabrir o chamado {ticketId} para que a equipe humana atue.",
-                "Para que possamos analisar a situação de forma humanizada, preciso que você reabra o ticket {ticketId}. Após isso, nossa equipe cuidará do restante."
-            ],
-            "5": [
-                "Olá, {nome}! Antes de abrirmos um chamado, preciso confirmar: qual painel exatamente você está usando referente a {context}? Poderia me enviar um print da tela inteira?",
-                "Tudo bem, {nome}? Para eu conseguir simular a situação de {context} antes de abrirmos um ticket, qual é o caminho exato do erro? Me envie um print completo.",
-                "Olá, {nome}! Deixe-me fazer uma investigação inicial sobre {context} antes de acionar a equipe. Poderia enviar um print para que eu veja os filtros aplicados?",
-                "{nome}, para eu realizar uma pré-validação e agilizar o processo de {context}, preciso ver a sua visão da tela. Se possível, envie a tela inteira.",
-                "Olá, {nome}! Para sermos mais precisos na análise de {context}, peço que envie um print da tela toda. Tentarei simular a situação aqui primeiro."
-            ],
-            "6": [
-                "{nome}, para facilitar e poupar o seu tempo, já realizei a abertura do chamado em seu nome (nº {ticketId}). A equipe técnica dará continuidade.",
-                "Olá, {nome}! Para que você não tenha esse trabalho, eu mesmo abri o ticket {ticketId} para registrar o caso de {context}.",
-                "Para agilizarmos e não interrompermos seu fluxo, {nome}, já registrei o ticket {ticketId}. Nossa equipe utilizará essas informações para validar a situação.",
-                "{nome}, não se preocupe com o chamado, eu já realizei a abertura para você: ticket {ticketId}. Por favor, acompanhe, pois a equipe técnica o atualizará por lá.",
-                "{nome}, entendo que o processo de abrir chamado pode ser inconveniente. Para evitar transtornos, criei o ticket {ticketId} e o retorno será enviado nele."
-            ],
-            "7": [
-                "Olá, equipe. Complementei o ticket {ticketId} com algumas informações que recebi no WhatsApp. Por favor, verifiquem as mensagens internas para mais detalhes.",
-                "Aviso rápido: adicionei mais evidências no ticket {ticketId} com base no que o cliente enviou por WhatsApp. Os dados estão na mensagem interna.",
-                "Incluí uma anotação interna no ticket {ticketId} com detalhes adicionais fornecidos pelo cliente no privado. Isso ajudará na análise do caso.",
-                "O cliente do ticket {ticketId} enviou mais contexto pelo WhatsApp. Já registrei tudo de forma interna para auxiliar na investigação de vocês.",
-                "Equipe, complementei o chamado {ticketId} com o contexto novo enviado via WhatsApp, que já se encontra na mensagem interna."
-            ],
-            "8": [
-                "Olá! Nosso analista precisa fazer um rápido contato telefônico referente ao ticket {ticketId} com {nomeContato}. Poderiam nos fornecer um número para contato?",
-                "Tudo bem? Gostaríamos de realizar um breve contato telefônico com {nomeContato} para avançarmos no chamado {ticketId}. Podem nos enviar um telefone, por favor?",
-                "Bom dia! Para resolvermos um detalhe do ticket {ticketId}, precisamos falar rapidamente por telefone com {nomeContato}. Vocês conseguem nos informar o número?",
-                "Olá equipe. Estamos atuando no chamado {ticketId} e nosso analista precisa alinhar um ponto por telefone com {nomeContato}. Poderiam nos passar o contato?",
-                "Para agilizar o atendimento do ticket {ticketId}, gostaríamos de falar com {nomeContato} por telefone. Como não localizamos o número, poderiam nos enviar?"
-            ],
-            "9": [
-                "Prezado(a) {nome}, informamos que a nossa equipe de infraestrutura já está ciente da instabilidade pontual em nosso sistema e está atuando na verificação para a pronta normalização. Assim que a plataforma for estabilizada, retornaremos o contato.",
-                "Olá {nome}! Nossa equipe técnica identificou uma instabilidade na plataforma e já iniciou as tratativas de correção. Agradecemos a compreensão enquanto trabalhamos na normalização e retornaremos em breve.",
-                "Olá {nome}. Confirmamos que o sistema encontra-se com uma instabilidade no momento. O time de infraestrutura já está focado na investigação e correção. Avisaremos assim que tudo estiver normalizado.",
-                "{nome}, a nossa equipe já está ciente da instabilidade e está atuando com prioridade máxima para a estabilização da plataforma ZG. Retornaremos com atualizações assim que tivermos um posicionamento técnico.",
-                "Tudo bem, {nome}? Estamos enfrentando uma instabilidade sistêmica, mas nossa equipe de infraestrutura já está atuando para reestabelecer o serviço o mais rápido possível. Agradecemos sua paciência e compreensão."
-            ]
+            "1": ["Olá {nome}! Passando para informar que sua solicitação {ticketId} sobre {context} já passou pela nossa triagem e foi priorizada. Nossa equipe já está acompanhando."],
+            "2": ["Olá {nome}! O seu chamado {ticketId} já está em atendimento para {context}. A equipe técnica está focada na análise e logo trará um posicionamento."],
+            "3": ["Compreendo perfeitamente a urgência, {nome}. Já acionei o analista responsável e pedi prioridade total no retorno do ticket {ticketId} sobre {context}."],
+            "4": ["Olá {nome}! O chamado {ticketId} foi fechado pelo Zerinho, mas se a dúvida não foi resolvida para {context}, basta reabrir o ticket que nós assumiremos por aqui."],
+            "5": ["Olá, {nome}! Antes de abrirmos um chamado sobre {context}, preciso confirmar: qual painel exatamente você está usando? Poderia me enviar um print?"],
+            "6": ["{nome}, para facilitar e poupar o seu tempo, já realizei a abertura do chamado em seu nome (nº {ticketId}) para {context}. A equipe técnica dará continuidade."],
+            "7": ["Olá, equipe. Complementei o ticket {ticketId} com algumas informações que recebi no WhatsApp sobre {context}. Por favor, verifiquem as mensagens internas para mais detalhes."],
+            "8": ["Olá! Nosso analista precisa fazer um rápido contato telefônico referente ao ticket {ticketId} sobre {context} com {nomeContato}. Poderiam nos fornecer um número para contato?"],
+            "9": ["Olá {nome}! Nossa equipe técnica identificou uma instabilidade relacionada a {context} e já iniciou as tratativas de correção. Retornaremos no ticket {ticketId} em breve."]
         };
 
         const scenarioTextMap = {
-            "1": "Chamado(s) priorizado(s)",
-            "2": "Chamado em atendimento",
-            "3": "Segunda cobrança",
-            "4": "Zerinho finalizou, cliente discorda",
-            "5": "Relato sem ticket aberto",
-            "6": "Cliente recusa abrir ticket",
-            "7": "Informação nova em ticket aberto (Mensagem Interna)",
-            "8": "Solicitação de contato telefônico",
-            "9": "Instabilidade sistêmica (Incidente)"
+            "1": "Chamado(s) priorizado(s)", "2": "Chamado em atendimento", "3": "Segunda cobrança", "4": "Zerinho finalizou", "5": "Relato sem ticket aberto", "6": "Cliente recusa abrir ticket", "7": "Mensagem Interna", "8": "Solicitação de contato telefônico", "9": "Instabilidade sistêmica"
         };
 
-        const checklistText = `
----
-📋 **Checklist de 30 segundos:**
-* O cliente já mandou print, protocolo ou convênio? Não peça de novo.
-* Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?
-* Se são vários chamados do mesmo cliente, consolidou numa mensagem só?
-* Explicou por que está pedindo o ticket, ou só mandou pedir?
----`;
-
-        /* =========================================
-         *  REFERÊNCIAS DOM
-         * ========================================= */
-        const scenarioSelect = document.getElementById('scenarioSelect');
-        const areaServicoSelect = document.getElementById('areaServico');
-        const servicoEspecificoSelect = document.getElementById('servicoEspecifico');
-        const dynamicFieldsContainer = document.getElementById('dynamicFields');
-        const btnGenerate = document.getElementById('btnGenerate');
-        const outputContainer = document.getElementById('outputContainer');
-        const resultsSection = document.getElementById('resultsSection');
-        const checklistAlert = document.getElementById('checklistAlert');
-        const validationAlert = document.getElementById('validationAlert');
-        const promptText = document.getElementById('promptText');
-        const btnCopyPrompt = document.getElementById('btnCopyPrompt');
-
-        // Grok DOM
-        const grokLoading = document.getElementById('grokLoading');
-        const grokError = document.getElementById('grokError');
-        const grokResults = document.getElementById('grokResults');
-
         const scenarioFieldsMap = {
-            "1": ["ticketId", "context", "nome"],
-            "2": ["ticketId", "nome"],
-            "3": ["ticketId", "nome"],
-            "4": ["ticketId", "nome"],
-            "5": ["context", "nome"],
-            "6": ["ticketId", "context", "nome"],
-            "7": ["ticketId"],
-            "8": ["ticketId", "nomeContato"],
-            "9": ["nome"]
+            "1": ["ticketId", "nomeCliente", "context"], "2": ["ticketId", "nomeCliente", "context"], "3": ["ticketId", "nomeCliente", "context"], "4": ["ticketId", "nomeCliente", "context"], "5": ["nomeCliente", "context"], "6": ["ticketId", "nomeCliente", "context"], "7": ["ticketId", "context"], "8": ["ticketId", "nomeContato", "context"], "9": ["nomeCliente", "ticketId", "context"]
         };
 
         const fieldsHtml = {
-            "ticketId": `
-                <div class="dynamic-field">
-                    <label class="form-label" for="input_ticketId">Ticket ID</label>
-                    <input type="text" id="input_ticketId" class="form-input" placeholder="Ex: 613448">
-                </div>`,
-            "context": `
-                <div class="dynamic-field">
-                    <label class="form-label" for="input_context">Contexto</label>
-                    <input type="text" id="input_context" class="form-input" placeholder="Ex: importação Bradesco">
-                </div>`,
-            "nome": `
-                <div class="dynamic-field">
-                    <label class="form-label" for="input_nome">Nome do Cliente</label>
-                    <input type="text" id="input_nome" class="form-input" placeholder="Ex: Carlos">
-                </div>`,
-            "nomeContato": `
-                <div class="dynamic-field">
-                    <label class="form-label" for="input_nomeContato">Nome de quem deseja falar</label>
-                    <input type="text" id="input_nomeContato" class="form-input" placeholder="Ex: Ana Cristina">
-                </div>`
+            "ticketId": `<div class="form-group"><label class="form-label">Ticket ID</label><input type="text" id="ticketId" class="form-input required-field" placeholder="Ex: 613448"></div>`,
+            "nomeCliente": `<div class="form-group"><label class="form-label">Nome do Cliente</label><input type="text" id="nomeCliente" class="form-input required-field" placeholder="Ex: Carlos"></div>`,
+            "nomeContato": `<div class="form-group"><label class="form-label">Nome do Contato</label><input type="text" id="nomeContato" class="form-input required-field" placeholder="Ex: Suporte de TI"></div>`,
+            "context": `<div class="form-group"><label class="form-label">Contexto (Opcional)</label><input type="text" id="context" class="form-input" placeholder="Ex: lentidão na tela principal"></div>`
         };
 
-        /* =========================================
-         *  GEMINI API — Função de chamada
-         * ========================================= */
-        async function callGeminiAPI(userPrompt) {
-            const apiKeyEl = document.getElementById('apiKeyInput');
-            let userKey = apiKeyEl ? apiKeyEl.value.trim() : '';
-            
-            // Se não foi digitada agora, tenta pegar a chave salva "por baixo dos panos"
-            if (!userKey) {
-                userKey = localStorage.getItem('helpzap_api_key') || '';
-            }
-            
-            const finalApiKey = userKey || GEMINI_API_KEY;
+        const SYSTEM_PROMPT = `Você é um analista sênior de suporte da ZG Soluções.
+Baseado na estrutura textual enviada, crie uma resposta humanizada, direta, clara e acolhedora para o cliente.
 
-            if (!finalApiKey || finalApiKey === '') {
-                if (apiKeyEl) apiKeyEl.parentElement.style.display = 'block';
-                throw new Error("Por favor, cole sua Chave de API válida no campo correspondente acima.");
-            }
+**OBRIGATÓRIO: Retorne APENAS um objeto JSON válido** no seguinte formato exato:
+{
+  "suggested_response": "Olá, [Nome] 👋\\n\\n[Corpo da mensagem clara e direta]\\n\\n[Mensagem Final]"
+}
 
-            const ai = new GoogleGenAI({ apiKey: finalApiKey });
-            
-            // Lista padrão de modelos
-            const defaultModels = [
-                'gemini-3.6-flash',
-                'gemini-3.7-flash'
-            ];
-            
-            // Prioriza o modelo que funcionou na última vez para zerar o tempo de carga
-            const savedModel = localStorage.getItem('helpzap_successful_model');
-            const modelsToTry = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
-            
-            let errors = [];
+**Regras estritas:**
+- Melhore e refine o texto base para que soe muito natural.
+- Mantenha a notação exata [Nome] e [Ticket] se o texto base usar essas tags (ou troque os valores literais fornecidos pelas tags [Ticket] e [Nome] para ficarem formatadas).
+- NUNCA invente informações.
+- Textos excessivamente corporativos devem ser suavizados para o tom moderno e prestativo da ZG.`;
 
-            for (const model of modelsToTry) {
-                try {
-                    const response = await ai.models.generateContent({
-                        model: model,
-                        contents: GEMINI_SYSTEM_PROMPT + "\n\n---\n\n" + userPrompt,
-                        config: {
-                            temperature: 0.7
-                        }
-                    });
-                    
-                    // Sucesso! Salva a chave e o modelo "por baixo dos panos"
-                    localStorage.setItem('helpzap_successful_model', model);
-                    localStorage.setItem('helpzap_api_key', finalApiKey);
-                    console.log(`Sucesso utilizando o modelo: ${model}`);
-                    
-                    // Esconde o campo da chave de API da interface para o usuário final
-                    if (apiKeyEl) apiKeyEl.parentElement.style.display = 'none';
-                    
-                    return { text: response.text };
-                } catch (error) {
-                    errors.push(`${model}: ${error.message}`);
-                    console.warn(`Tentativa com o modelo ${model} falhou:`, error.message);
-                    
-                    // Se for erro de chave (401, 403), apaga a chave salva e exibe o campo novamente
-                    if (error.message.includes("403") || error.message.includes("401") || error.message.includes("API key not valid")) {
-                        localStorage.removeItem('helpzap_api_key');
-                        if (apiKeyEl) apiKeyEl.parentElement.style.display = 'block';
-                        throw new Error(`Chave de API inválida ou sem permissão. Verifique sua chave.`);
-                    }
-                    if (error.message.includes("429")) {
-                        throw new Error(`Limite de uso atingido (Quota Exceeded / 429) no modelo ${model}.`);
-                    }
-                    // Caso contrário (404, 503, etc), o loop continua e tenta o próximo modelo
-                }
-            }
+        // Elementos UI
+        const areaServicoSelect = document.getElementById('areaServico');
+        const servicoEspecificoSelect = document.getElementById('servicoEspecifico');
+        const scenarioSelect = document.getElementById('scenarioSelect');
+        const dynamicFields = document.getElementById('dynamicFields');
+        const btnGenerate = document.getElementById('btnGenerate');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const errorMsg = document.getElementById('errorMsg');
 
-            throw new Error(`Modelos indisponíveis. Erros: ${errors.join(' | ')}`);
-        }
-
-        /**
-         * Extrai o texto da resposta da API do Gemini.
-         */
-        function extractGeminiText(data) {
-            if (data && data.text) {
-                return data.text;
-            }
-            throw new Error('Formato de resposta do Gemini não reconhecido ou vazio.');
-        }
-
-        /**
-         * Divide o texto do Grok em opções individuais.
-         * Tenta vários padrões: "Opção 1:", "1.", "1)", "**Opção 1**", separadores ---
-         */
-        function parseGrokOptions(fullText) {
-            // Tenta o separador estrito "|||" primeiro
-            if (fullText.includes('|||')) {
-                const parts = fullText.split('|||').map(s => s.trim()).filter(s => s.length > 5);
-                if (parts.length > 0) return parts.slice(0, 3);
-            }
-
-            // Tenta split por padrões comuns de numeração
-            const patterns = [
-                /(?:^|\n)\s*\*{0,2}Opção\s*\d+\*{0,2}\s*[-:.]?\s*/gi,
-                /(?:^|\n)\s*\*{0,2}Resposta\s*\d+\*{0,2}\s*[-:.]?\s*/gi,
-                /(?:^|\n)\s*\d+[\.\)\-]\s*/g,
-                /\n-{3,}\n/g
-            ];
-
-            for (const pattern of patterns) {
-                const parts = fullText.split(pattern).map(s => s.trim()).filter(s => s.length > 20);
-                if (parts.length >= 3) {
-                    return parts.slice(0, 3);
-                }
-            }
-
-            // Se nenhum padrão funcionou, tenta dividir por parágrafos duplos
-            const paragraphs = fullText.split(/\n\n+/).map(s => s.trim()).filter(s => s.length > 20);
-            if (paragraphs.length >= 3) {
-                return paragraphs.slice(0, 3);
-            }
-
-            // Último recurso: retorna o texto inteiro como uma única opção
-            return [fullText.trim()];
-        }
-
-        /**
-         * Renderiza os cards de resposta do Grok na tela
-         */
-        function renderGrokCards(options) {
-            const toneLabels = ['Formal', 'Direto', 'Acolhedor'];
-            const toneIcons = [
-                '<i class="fa-solid fa-hat-wizard"></i>', // Formal (Cartola/Mágico)
-                '<i class="fa-solid fa-bullseye"></i>',   // Direto (Alvo)
-                '<i class="fa-solid fa-handshake"></i>'   // Acolhedor (Aperto de mãos)
-            ];
-            
-            grokResults.innerHTML = '';
-
-            options.forEach((text, index) => {
-                // Limpa marcações markdown residuais do texto
-                let cleanText = text
-                    .replace(/^\*{1,2}(.*?)\*{1,2}$/gm, '$1')  // Remove bold markers em linhas inteiras
-                    .replace(/\*\*(.*?)\*\*/g, '$1')             // Remove bold inline
-                    .trim();
-
-                const tone = toneLabels[index] || `Opção ${index + 1}`;
-                const iconHtml = toneIcons[index] || '<i class="fa-solid fa-wand-magic-sparkles"></i>';
-
-                const card = document.createElement('div');
-                card.className = 'grok-card';
-                card.innerHTML = `
-                    <div class="grok-card-header">
-                        <div class="grok-icon">${iconHtml}</div>
-                        <span class="grok-badge">Tom: ${tone}</span>
-                        <span class="grok-tone">Helpzap AI</span>
-                    </div>
-                    <div class="grok-phrase">${cleanText}</div>
-                    <button class="btn-copy-grok" title="Copiar esta resposta">
-                        <i class="fa-regular fa-copy"></i> Copiar
-                    </button>
-                `;
-
-                // Evento de copiar
-                const btnCopy = card.querySelector('.btn-copy-grok');
-                btnCopy.addEventListener('click', async () => {
-                    try {
-                        await navigator.clipboard.writeText(cleanText);
-                        btnCopy.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                        btnCopy.classList.add('success');
-                        setTimeout(() => {
-                            btnCopy.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
-                            btnCopy.classList.remove('success');
-                        }, 2000);
-                    } catch (err) {
-                        alert('Erro ao copiar.');
-                    }
-                });
-
-                grokResults.appendChild(card);
-            });
-
-            grokResults.style.display = 'grid';
-        }
-
-        /* =========================================
-         *  INICIALIZAÇÃO DO APLICATIVO
-         * ========================================= */
-        document.addEventListener('DOMContentLoaded', () => {
-            // Oculta a chave API se já existir uma salva "por baixo dos panos"
-            const savedKey = localStorage.getItem('helpzap_api_key');
-            const apiKeyEl = document.getElementById('apiKeyInput');
-            if (savedKey && apiKeyEl) {
-                apiKeyEl.parentElement.style.display = 'none';
-            }
-            
-            populateSelect(areaServicoSelect, Object.keys(AREAS_SERVICO), "Selecione...");
-        });
-
-        /* =========================================
-         *  EVENT LISTENERS
-         * ========================================= */
+        // Logic UI
         areaServicoSelect.addEventListener('change', function() {
             const area = this.value;
             servicoEspecificoSelect.innerHTML = '<option value="">Selecione...</option>';
-            
-            if (area === 'A confirmar' || !area) {
-                servicoEspecificoSelect.disabled = true;
-                return;
-            }
-            
+            if (area === 'A confirmar' || !area) { servicoEspecificoSelect.disabled = true; checkFormReady(); return; }
             servicoEspecificoSelect.disabled = false;
-            AREAS_SERVICO[area].forEach(servico => {
-                const opt = document.createElement('option');
-                opt.value = servico;
-                opt.textContent = servico;
+            AREAS_SERVICO[area].forEach(s => {
+                const opt = document.createElement('option'); opt.value = s; opt.textContent = s;
                 servicoEspecificoSelect.appendChild(opt);
             });
+            checkFormReady();
         });
+
+        servicoEspecificoSelect.addEventListener('change', checkFormReady);
 
         scenarioSelect.addEventListener('change', (e) => {
             const scenario = e.target.value;
-            checklistAlert.style.display = 'block';
-            dynamicFieldsContainer.innerHTML = '';
-
-            const fieldsRequired = scenarioFieldsMap[scenario];
-            if(fieldsRequired) {
-                fieldsRequired.forEach(fieldKey => {
-                    dynamicFieldsContainer.innerHTML += fieldsHtml[fieldKey];
-                });
-                dynamicFieldsContainer.style.display = 'flex';
+            dynamicFields.innerHTML = '';
+            const fields = scenarioFieldsMap[scenario];
+            if(fields) {
+                fields.forEach(f => dynamicFields.innerHTML += fieldsHtml[f]);
             }
+            
+            // Add listeners to new fields
+            document.querySelectorAll('.required-field').forEach(input => {
+                input.addEventListener('input', checkFormReady);
+            });
+            checkFormReady();
         });
+
+        function checkFormReady() {
+            let ready = true;
+            if(!scenarioSelect.value) ready = false;
+            if(areaServicoSelect.value !== 'A confirmar' && !servicoEspecificoSelect.value) ready = false;
+            
+            document.querySelectorAll('.required-field').forEach(input => {
+                if(!input.value.trim()) ready = false;
+            });
+            
+            btnGenerate.disabled = !ready;
+        }
 
         btnGenerate.addEventListener('click', async () => {
+            errorMsg.style.display = 'none';
+            let key = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key');
+            
+            if (!key) {
+                errorMsg.innerText = "Por favor, insira sua Chave de API do Gemini.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
             const scenario = scenarioSelect.value;
-            const area = areaServicoSelect.value;
-            const servico = servicoEspecificoSelect.value;
-
-            validationAlert.style.display = 'none';
-
-            if (!scenario) {
-                validationAlert.innerText = "Por favor, selecione um cenário de atendimento.";
-                validationAlert.style.display = 'block';
-                return;
-            }
-
-            if (!area) {
-                validationAlert.innerText = "Por favor, selecione a Área de Serviço.";
-                validationAlert.style.display = 'block';
-                return;
-            }
-
-            const fieldsRequired = scenarioFieldsMap[scenario];
-            let values = {};
-            let userContextLines = [];
+            const contextText = document.getElementById('context')?.value || (areaServicoSelect.value + " - " + (servicoEspecificoSelect.value || "Geral"));
             
-            fieldsRequired.forEach(fieldKey => {
-                const el = document.getElementById(`input_${fieldKey}`);
-                let val = el ? el.value.trim() : '';
-                
-                if (val === '') {
-                    if (fieldKey === 'nome') val = 'Cliente';
-                    else val = `[${fieldKey}]`;
-                } else {
-                    userContextLines.push(`${fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1)}: ${val}`);
-                }
-                
-                values[fieldKey] = val;
-            });
-            values['servicoEspecifico'] = servico || 'Geral';
-
-            resultsSection.innerHTML = '';
-
-            // ==============================
-            // 1) Renderizar respostas da base local (imediato)
-            // ==============================
-            const phrases = phraseDatabase[scenario];
-            phrases.forEach((phraseTpl) => {
-                let finalPhrase = phraseTpl;
-                for(let key in values) {
-                    const regex = new RegExp(`{${key}}`, 'g');
-                    let displayVal = values[key];
-                    if(key === 'nome' && displayVal === 'Cliente') {
-                        finalPhrase = finalPhrase.replace(regex, '').replace('Olá !', 'Olá!').replace(' ,', ',').replace('  ', ' ');
-                    } else {
-                        finalPhrase = finalPhrase.replace(regex, displayVal);
-                    }
-                }
-                
-                finalPhrase = finalPhrase.replace(/ {2,}/g, ' ').trim();
-
-                const cardHtml = `
-                    <div class="result-card">
-                        <div class="phrase-text">${finalPhrase}</div>
-                        <button class="btn-copy-sm" title="Copiar Frase + Checklist">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
-                `;
-                resultsSection.innerHTML += cardHtml;
-            });
-
-            // Gerar o prompt para IA externa (e para o Grok)
-            const userContextStr = userContextLines.length > 0 ? userContextLines.join("\n") : "Nenhum detalhe extra preenchido.";
+            let baseText = phraseDatabase[scenario][0];
+            baseText = baseText.replace('{nome}', document.getElementById('nomeCliente')?.value || '[Nome]');
+            baseText = baseText.replace('{ticketId}', document.getElementById('ticketId')?.value || '[Ticket]');
+            baseText = baseText.replace('{context}', contextText);
+            baseText = baseText.replace('{nomeContato}', document.getElementById('nomeContato')?.value || '[Nome Contato]');
             
-            const promptExternal = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
-Por favor, gere 3 opções de respostas amigáveis e resolutivas para envio no WhatsApp.
+            const finalPrompt = `Texto base sugerido:\n"${baseText}"\n\nPor favor, reescreva-o de forma premium e retorne o JSON.`;
 
-Aqui estão os dados do atendimento atual:
-- Cenário: ${scenarioTextMap[scenario]}
-- Área de Serviço: ${area}
-- Serviço Específico: ${servico || 'Não aplicável'}
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('resultContent').style.display = 'flex';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Set Titles
+            document.getElementById('resultScenarioTitle').innerText = scenarioTextMap[scenario];
 
-Detalhes preenchidos:
-${userContextStr}
-
-Instruções:
-- GERE EXATAMENTE 3 OPÇÕES (1. Formal, 2. Direta, 3. Acolhedora).
-- OBRIGATÓRIO: Separe CADA opção com a string "|||". Não use "Opção 1", apenas as mensagens separadas por "|||".
-- Seja claro, objetivo e empático.
-- Não invente informações, prazos ou ferramentas que não mencionei.
-- Não mencione nomes de responsáveis internos, refira-se à "equipe técnica" ou "setor responsável".
-- Jamais diga que o chamado será resolvido agora, prefira tons como "em breve daremos um retorno".
-- Os retornos sempre serão realizados através do próprio chamado.`;
-
-            promptText.innerText = promptExternal;
-            document.getElementById('aiResultsWrapper').style.display = 'block';
-            document.getElementById('btnToggleSidebar').style.display = 'flex';
-            document.getElementById('btnOpenPromptModal').style.display = 'flex';
-
-            // Eventos de copiar da base local
-            document.querySelectorAll('.btn-copy-sm').forEach((btn) => {
-                btn.addEventListener('click', async (e) => {
-                    const btnTarget = e.currentTarget;
-                    const phraseTxt = btnTarget.previousElementSibling.innerText;
-                    
-                    const textToCopy = phraseTxt + "\n" + checklistText;
+            try {
+                const ai = new GoogleGenAI({ apiKey: key });
+                const defaultModels = ['gemini-3.6-flash', 'gemini-3.7-flash'];
+                const savedModel = localStorage.getItem('helpzap_successful_model');
+                const models = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
+                
+                let successResponse = null;
+                for (let model of models) {
                     try {
-                        await navigator.clipboard.writeText(textToCopy);
-                        const icon = btnTarget.querySelector('i');
-                        icon.className = 'fa-solid fa-check';
-                        btnTarget.classList.add('success');
-                        setTimeout(() => {
-                            icon.className = 'fa-regular fa-copy';
-                            btnTarget.classList.remove('success');
-                        }, 2000);
-                    } catch(err) {
-                        alert('Erro ao copiar.');
+                        const response = await ai.models.generateContent({
+                            model: model,
+                            contents: SYSTEM_PROMPT + "\\n\\n---\\n\\n" + finalPrompt,
+                            config: { temperature: 0.4 }
+                        });
+                        successResponse = response.text;
+                        localStorage.setItem('helpzap_api_key', key);
+                        localStorage.setItem('helpzap_successful_model', model);
+                        if (document.getElementById('apiKeyContainer')) document.getElementById('apiKeyContainer').style.display = 'none';
+                        break;
+                    } catch (e) {
+                        console.warn(e);
                     }
-                });
-            });
+                }
 
-            // ==============================
-            // 2) Chamar Helpzap AI (Groq) em paralelo
-            // ==============================
-            grokLoading.style.display = 'flex';
-            grokError.style.display = 'none';
-            grokResults.style.display = 'none';
-            grokResults.innerHTML = '';
+                if (!successResponse) throw new Error("A API falhou para todos os modelos configurados. Verifique sua chave.");
 
-            // Scroll suave até a seção
-            document.getElementById('aiResultsWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            try {
-                const grokData = await callGeminiAPI(promptExternal);
-                const fullText = extractGeminiText(grokData);
-                const options = parseGrokOptions(fullText);
-
-                grokLoading.style.display = 'none';
-                grokResults.style.display = 'grid';
-                renderGrokCards(options);
-
-                // Scroll suave até os resultados do Groq
-                document.getElementById('aiResultsWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            } catch (error) {
-                grokLoading.style.display = 'none';
-                grokError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Erro ao consultar Helpzap AI: ${error.message}`;
-                grokError.style.display = 'block';
-            }
-        });
-
-        // Trigger change no carregamento para restaurar campos se o navegador fez auto-fill
-        if (scenarioSelect.value) {
-            scenarioSelect.dispatchEvent(new Event('change'));
-        }
-        if (areaServicoSelect.value) {
-            areaServicoSelect.dispatchEvent(new Event('change'));
-        }
-
-        btnCopyPrompt.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(promptText.innerText);
-                const originalHtml = btnCopyPrompt.innerHTML;
-                btnCopyPrompt.innerHTML = '<i class="fa-solid fa-check"></i> Prompt Copiado!';
-                btnCopyPrompt.style.background = 'var(--success)';
+                let jsonStr = successResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                const start = jsonStr.indexOf('{');
+                const end = jsonStr.lastIndexOf('}');
+                if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
                 
-                setTimeout(() => {
-                    btnCopyPrompt.innerHTML = originalHtml;
-                    btnCopyPrompt.style.background = '';
-                }, 2000);
+                const data = JSON.parse(jsonStr);
+
+                // Render Response with tags
+                let text = data.suggested_response.replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>');
+                text = text.replace(/\\n/g, '<br>');
+                document.getElementById('responseText').innerHTML = text;
+                window.currentResponseText = data.suggested_response;
+
             } catch (err) {
-                alert('Erro ao copiar o prompt.');
+                errorMsg.innerText = err.message;
+                errorMsg.style.display = 'block';
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('resultContent').style.display = 'none';
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
             }
         });
 
-        // ==============================
-        // Controle da Sidebar e Modais
-        // ==============================
-        const localSidebar = document.getElementById('localSidebar');
-        const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-        const btnCloseSidebar = document.getElementById('btnCloseSidebar');
-
-        btnToggleSidebar.addEventListener('click', () => {
-            localSidebar.classList.add('open');
+        document.getElementById('btnCopyResult').addEventListener('click', async (e) => {
+            try {
+                await navigator.clipboard.writeText(window.currentResponseText);
+                const btn = e.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            } catch(e) {}
         });
 
-        btnCloseSidebar.addEventListener('click', () => {
-            localSidebar.classList.remove('open');
-        });
-
-        const promptModal = document.getElementById('promptModal');
-        const btnOpenPromptModal = document.getElementById('btnOpenPromptModal');
-        const btnClosePromptModal = document.getElementById('btnClosePromptModal');
-
-        btnOpenPromptModal.addEventListener('click', () => {
-            promptModal.classList.add('open');
-        });
-
-        btnClosePromptModal.addEventListener('click', () => {
-            promptModal.classList.remove('open');
-        });
-
-        // Fechar modal ao clicar fora
-        promptModal.addEventListener('click', (e) => {
-            if (e.target === promptModal) {
-                promptModal.classList.remove('open');
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('helpzap_api_key')) {
+                const ac = document.getElementById('apiKeyContainer');
+                if(ac) ac.style.display = 'none';
             }
+            document.getElementById('resultContent').style.display = 'none';
         });
-
-        const docsModal = document.getElementById('docsModal');
-        const btnOpenDocsModal = document.getElementById('btnOpenDocsModal');
-        const btnCloseDocsModal = document.getElementById('btnCloseDocsModal');
-
-        btnOpenDocsModal.addEventListener('click', () => {
-            docsModal.classList.add('open');
-        });
-
-        btnCloseDocsModal.addEventListener('click', () => {
-            docsModal.classList.remove('open');
-        });
-
-        docsModal.addEventListener('click', (e) => {
-            if (e.target === docsModal) {
-                docsModal.classList.remove('open');
-            }
-        });
-
     </script>
 </body>
 </html>
