@@ -208,7 +208,7 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal-overlay" id="historyModal">
+    <div class="modal-overlay" id="historyModal" onclick="if(event.target === this) this.style.display = 'none'">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 style="color: white;"><i class="fa-solid fa-clock-rotate-left"></i> History</h3>
@@ -220,11 +220,11 @@
 
 
     <!-- Modal Respostas 3 Opções -->
-    <div class="modal-overlay" id="responsesModal">
+    <div class="modal-overlay" id="responsesModal" onclick="if(event.target === this) this.style.display = 'none'">
         <div class="modal-content" style="max-width: 1200px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
             <div class="modal-header">
                 <div class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas</div>
-                <button class="btn-close-sidebar" id="btnCloseResponsesModal"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-close-sidebar" onclick="document.getElementById('responsesModal').style.display = 'none'"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="responsesModalContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; overflow-y: auto; padding-top: 1rem;">
                 <!-- Via JS -->
@@ -448,18 +448,6 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
 
         document.getElementById('btnCloseHistory').addEventListener('click', () => {
             document.getElementById('historyModal').style.display = 'none';
-        });
-
-        // Close Modals on click outside
-        window.addEventListener('click', (e) => {
-            if(e.target === docsModal) docsModal.style.display = 'none';
-            if(e.target === historyModal) historyModal.style.display = 'none';
-            if(e.target === insightsModal) insightsModal.style.display = 'none';
-            if(e.target === document.getElementById('responsesModal')) document.getElementById('responsesModal').style.display = 'none';
-        });
-
-        document.getElementById('btnCloseResponsesModal')?.addEventListener('click', () => {
-            document.getElementById('responsesModal').style.display = 'none';
         });
 
         document.addEventListener('DOMContentLoaded', () => {
