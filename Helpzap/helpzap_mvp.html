@@ -727,20 +727,16 @@ Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular 3 OP�
 
                 // Lista padrão de modelos
                 const defaultModels = [
-                    'gemini-3.7-flash',
-                    'gemini-3.5-flash',
-                    'gemini-2.5-flash',
                     'gemini-2.0-flash',
-                    'gemini-1.5-pro',
                     'gemini-1.5-flash',
-                    'gemini-pro'
+                    'gemini-1.5-pro'
                 ];
                 
                 const savedModel = localStorage.getItem('helpzap_successful_model');
                 const modelsToTry = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
 
                 let successfulResponse = null;
-                let lastError = null;
+                let errors = [];
 
                 for (const model of modelsToTry) {
                     try {
@@ -775,7 +771,7 @@ Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular 3 OP�
                             break; // Sucesso! Sai do loop de tentativas
                         }
                     } catch (error) {
-                        lastError = error;
+                        errors.push(`${model}: ${error.message}`);
                         console.warn(`Tentativa com o modelo ${model} falhou:`, error.message);
                         
                         if (error.message.includes("403") || error.message.includes("401") || error.message.includes("API key not valid")) {
@@ -784,11 +780,14 @@ Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular 3 OP�
                             if (apiKeyContainer) apiKeyContainer.style.display = 'block';
                             throw new Error(`Chave de API inválida ou sem permissão. Verifique sua chave.`);
                         }
+                        if (error.message.includes("429")) {
+                            throw new Error(`Limite de uso atingido (Quota Exceeded / 429) no modelo ${model}. Aguarde alguns instantes.`);
+                        }
                     }
                 }
 
                 if (!successfulResponse) {
-                    throw new Error(lastError ? `Todos os modelos falharam. Último erro: ${lastError.message}` : "A API processou a imagem, mas não retornou nenhum texto.");
+                    throw new Error(`Modelos indisponíveis. Erros: ${errors.join(' | ')}`);
                 }
 
                 let generatedText = successfulResponse;
