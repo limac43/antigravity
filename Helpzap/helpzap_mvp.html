@@ -218,6 +218,20 @@
         </div>
     </div>
 
+
+    <!-- Modal Respostas 3 Opções -->
+    <div class="modal-overlay" id="responsesModal">
+        <div class="modal-content" style="max-width: 1200px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas</div>
+                <button class="btn-close-sidebar" id="btnCloseResponsesModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="responsesModalContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; overflow-y: auto; padding-top: 1rem;">
+                <!-- Via JS -->
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { GoogleGenAI } from 'https://esm.run/@google/genai';
 
@@ -351,7 +365,7 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
                 document.getElementById('checklistContainer').innerHTML = checklistHtml;
 
                 // Render Responses
-                const container = document.getElementById('responsesContainer');
+                const container = document.getElementById('responsesModalContainer');
                 container.innerHTML = '';
                 
                 const tons = [
@@ -405,6 +419,7 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
                 
                 document.getElementById('loadingContainer').style.display = 'none';
                 document.getElementById('resultsGrid').style.display = 'grid';
+                document.getElementById('responsesModal').style.display = 'flex';
                 document.getElementById('statusBadge').style.display = 'flex';
 
             } catch (err) {
