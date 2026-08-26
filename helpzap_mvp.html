@@ -49,7 +49,7 @@
         .top-header .subtitle { color: var(--text-muted); font-size: 1rem; }
         
         /* Grid Layout */
-        .results-grid { display: grid; grid-template-columns: 400px 1fr; gap: 2rem; }
+        .results-grid { display: grid; grid-template-columns: 480px 1fr; gap: 2rem; }
         .col-left { display: flex; flex-direction: column; gap: 1.5rem; }
         .col-right { display: flex; flex-direction: column; gap: 1.5rem; }
         
@@ -326,7 +326,7 @@
             "5": ["Olá, {nome}! Antes de abrirmos um chamado sobre {context}, preciso confirmar: qual painel exatamente você está usando? Poderia me enviar um print?"],
             "6": ["{nome}, para facilitar e poupar o seu tempo, já realizei a abertura do chamado em seu nome (nº {ticketId}) para {context}. A equipe técnica dará continuidade."],
             "7": ["Olá, equipe. Complementei o ticket {ticketId} com algumas informações que recebi no WhatsApp sobre {context}. Por favor, verifiquem as mensagens internas para mais detalhes."],
-            "8": ["Olá! Nosso analista precisa fazer um rápido contato telefônico referente ao ticket {ticketId} sobre {context} com {nomeContato}. Poderiam nos fornecer um número para contato?"],
+            "8": ["Olá {nome}! Nosso analista precisa fazer um rápido contato telefônico referente ao ticket {ticketId} sobre {context} com {nomeContato}. No entanto, não identificamos nenhum telefone cadastrado em nossa base de dados. Poderiam, por gentileza, disponibilizar um número para contato atualizado?"],
             "9": ["Olá {nome}! Nossa equipe técnica identificou uma instabilidade relacionada a {context} e já iniciou as tratativas de correção. Retornaremos no ticket {ticketId} em breve."]
         };
 
@@ -583,6 +583,11 @@ Baseado na estrutura textual enviada, crie uma resposta humanizada, direta, clar
             if(e.target === docsModal) docsModal.style.display = 'none';
             if(e.target === historyModal) historyModal.style.display = 'none';
             if(e.target === insightsModal) insightsModal.style.display = 'none';
+            if(e.target === document.getElementById('responsesModal')) document.getElementById('responsesModal').style.display = 'none';
+        });
+
+        document.getElementById('btnCloseResponsesModal')?.addEventListener('click', () => {
+            document.getElementById('responsesModal').style.display = 'none';
         });
 
         document.addEventListener('DOMContentLoaded', () => {

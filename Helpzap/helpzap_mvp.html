@@ -257,6 +257,7 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
 
 **Regras estritas para a Resposta:**
 - Seja o mais conciso possível. Textos longos são proibidos.
+- Se o cenário for sobre solicitação de contato telefônico, a resposta DEVE informar ao cliente que não identificamos nenhum telefone em nossa base de dados e pedir que ele disponibilize um número atualizado.
 - NUNCA invente informações. 
 - PROIBIDO dizer "já está analisando" ou "está verificando". Sempre use o tempo futuro: "em breve irá analisar" ou "iniciará a tratativa".
 - Não peça número de protocolo se o cliente já enviou.
@@ -447,6 +448,18 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
 
         document.getElementById('btnCloseHistory').addEventListener('click', () => {
             document.getElementById('historyModal').style.display = 'none';
+        });
+
+        // Close Modals on click outside
+        window.addEventListener('click', (e) => {
+            if(e.target === docsModal) docsModal.style.display = 'none';
+            if(e.target === historyModal) historyModal.style.display = 'none';
+            if(e.target === insightsModal) insightsModal.style.display = 'none';
+            if(e.target === document.getElementById('responsesModal')) document.getElementById('responsesModal').style.display = 'none';
+        });
+
+        document.getElementById('btnCloseResponsesModal')?.addEventListener('click', () => {
+            document.getElementById('responsesModal').style.display = 'none';
         });
 
         document.addEventListener('DOMContentLoaded', () => {
