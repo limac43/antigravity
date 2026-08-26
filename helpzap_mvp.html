@@ -86,6 +86,18 @@
         .spinner { width: 40px; height: 40px; border: 3px solid rgba(30, 215, 96, 0.3); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 1rem; }
         
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; width: 90%; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1rem; }
+        .modal-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-close-sidebar { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.25rem; transition: 0.2s; }
+        .btn-close-sidebar:hover { color: var(--danger); }
+        .history-item { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .history-date { font-weight: 600; color: white; }
+        .history-count { background: rgba(30, 215, 96, 0.1); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 700; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -104,10 +116,11 @@
             
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-                <a href="#" class="nav-item" onclick="window.location.href='Helpzap/helpzap_mvp.html'"><i class="fa-regular fa-image"></i> Auto Analysis</a>
+                <a href="#" class="nav-item" id="btnHistorySidebar"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="#" class="nav-item" id="btnInsightsSidebar"><i class="fa-regular fa-lightbulb"></i> Insights</a>
             </nav>
             <div class="sidebar-footer">
-                <a href="#" class="nav-item"><i class="fa-solid fa-book"></i> Docs</a>
+                <a href="#" class="nav-item" id="btnDocsSidebar"><i class="fa-solid fa-book"></i> Docs</a>
             </div>
         </aside>
 
@@ -210,6 +223,77 @@
                 </div>
             </div>
         </main>
+    </div>
+
+
+    <!-- Modal History -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Produtividade</div>
+                <button class="btn-close-sidebar" id="btnCloseHistory"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="historyList" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
+                <!-- Via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Insights -->
+    <div class="modal-overlay" id="insightsModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-regular fa-lightbulb"></i> Insights da IA</div>
+                <button class="btn-close-sidebar" id="btnCloseInsights"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="margin-top: 1rem; color: var(--text-main); line-height: 1.6;">
+                <p>O <strong>Helpzap AI</strong> tem ajudado você a economizar tempo valioso no dia a dia!</p>
+                <div style="background: rgba(30, 215, 96, 0.1); border: 1px solid var(--primary); padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center;">
+                    <span style="font-size: 2rem; font-weight: 700; color: var(--primary);" id="totalTicketsInsight">0</span><br>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Tickets gerados no total</span>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">Continue utilizando a ferramenta para manter o padrão e agilidade nos atendimentos.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Documentação -->
+    <div class="modal-overlay" id="docsModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-book"></i> Documentação ZG</div>
+                <button class="btn-close-sidebar" id="btnCloseDocsModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="prompt-container" style="flex: 1; overflow-y: auto; text-align: left; max-height: unset; padding-top: 1rem;">
+                <div class="prompt-text" style="color: var(--text-main); font-family: 'Inter', sans-serif;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Chamados priorizados.</h3>
+                    <p style="margin-bottom: 0.5rem;">1° Informamos que a sua solicitação já passou pela nossa triagem inicial:</p>
+                    <p style="margin-bottom: 1rem;">🎟️ Validação do Ticket: O chamado *n°ticket* foi devidamente validado e priorizado em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
+                    
+                    <p style="margin-bottom: 0.5rem;">2° Gostaríamos de informar que o seu atendimento recebeu um direcionamento especial pela nossa equipe:</p>
+                    <p style="margin-bottom: 0.5rem;">⚡ Priorização: O chamado *n°ticket* foi devidamente priorizado em nossa fila de atendimento.</p>
+                    <p style="margin-bottom: 1rem;">🕵️ Atribuição: O analista responsável pela demanda já foi notificado sobre a urgência do chamado.</p>
+                    
+                    <p style="margin-bottom: 0.5rem;">3°Informamos que as suas solicitações passaram pela nossa triagem inicial e foram atualizadas:</p>
+                    <p style="margin-bottom: 0.5rem;">🎟️ Tickets Validados e Priorizados: *n°dos tickets*</p>
+                    <p style="margin-bottom: 1rem;">🚀 Andamento: Todas as demandas foram devidamente priorizadas em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Quando o chamado que o cliente pediu prioridade se encontra “Em Atendimento”.</h3>
+                    <p style="margin-bottom: 0.5rem;">4° Passando para te avisar que o chamado *n°ticket* já se encontra em atendimento! 👩‍💻</p>
+                    <p style="margin-bottom: 1rem;">🚀 O analista responsável já está analisando o seu caso e logo mais trará um posicionamento direto no ticket.</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Quando o cliente realiza uma segunda cobrança</h3>
+                    <p style="margin-bottom: 0.5rem;">5° Já informamos ao analista responsável que você precisa de um retorno urgente sobre este chamado. Ele já está ciente e, em breve, vai te responder diretamente no ticket com todas as validações concluídas, combinado?</p>
+                    <p style="margin-bottom: 1rem;">Qualquer dúvida, sigo à disposição por aqui!</p>
+                    <hr style="margin: 2rem 0; border-color: var(--card-border);">
+
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Quando o cliente solicita prioridade e o Zerinho finalizou o ticket</h3>
+                    <p style="margin-bottom: 1rem;">6° Verificamos que o zerinho finalizou o chamado e caso você não esteja de acordo ou a sua dúvida ainda não tenha sido totalmente resolvida, é só realizar a reabertura do ticket que a nossa equipe assume a solicitação para fazer todas as validações necessárias.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -443,7 +527,50 @@ Baseado na estrutura textual enviada, crie uma resposta humanizada, direta, clar
             } catch(e) {}
         });
 
+
+        // Modal Logic
+        const docsModal = document.getElementById('docsModal');
+        const historyModal = document.getElementById('historyModal');
+        const insightsModal = document.getElementById('insightsModal');
+        
+        document.getElementById('btnDocsSidebar').addEventListener('click', (e) => { e.preventDefault(); docsModal.style.display = 'flex'; });
+        document.getElementById('btnCloseDocsModal').addEventListener('click', () => docsModal.style.display = 'none');
+        
+        document.getElementById('btnHistorySidebar').addEventListener('click', (e) => {
+            e.preventDefault();
+            const list = document.getElementById('historyList');
+            let historyStr = localStorage.getItem('helpzap_history') || '{}';
+            let history = JSON.parse(historyStr);
+            let dates = Object.keys(history).sort((a,b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            
+            if (dates.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Nenhum registro ainda.</p>';
+            } else {
+                list.innerHTML = dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${history[d]} tickets</span></div>`).join('');
+            }
+            historyModal.style.display = 'flex';
+        });
+        document.getElementById('btnCloseHistory').addEventListener('click', () => historyModal.style.display = 'none');
+        
+        document.getElementById('btnInsightsSidebar').addEventListener('click', (e) => {
+            e.preventDefault();
+            let historyStr = localStorage.getItem('helpzap_history') || '{}';
+            let history = JSON.parse(historyStr);
+            let total = Object.values(history).reduce((a,b) => a + b, 0);
+            document.getElementById('totalTicketsInsight').innerText = total;
+            insightsModal.style.display = 'flex';
+        });
+        document.getElementById('btnCloseInsights').addEventListener('click', () => insightsModal.style.display = 'none');
+
+        // Close Modals on click outside
+        window.addEventListener('click', (e) => {
+            if(e.target === docsModal) docsModal.style.display = 'none';
+            if(e.target === historyModal) historyModal.style.display = 'none';
+            if(e.target === insightsModal) insightsModal.style.display = 'none';
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
+
             if (localStorage.getItem('helpzap_api_key')) {
                 const ac = document.getElementById('apiKeyContainer');
                 if(ac) ac.style.display = 'none';
