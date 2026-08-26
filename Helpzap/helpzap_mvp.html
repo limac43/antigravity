@@ -16,8 +16,8 @@
             --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b);
             --card-bg: rgba(30, 41, 59, 0.65);
             --card-border: rgba(255, 255, 255, 0.1);
-            --primary: #6366f1;       /* Indigo 500 */
-            --primary-hover: #4f46e5; /* Indigo 600 */
+            --primary: #1ed760;       /* Green */
+            --primary-hover: #1fdf64; /* Green hover */
             --accent: #22d3ee;        /* Cyan 400 */
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -350,18 +350,97 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Multi-options and History CSS */
+        .btn-history {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
         }
+        .btn-history:hover { background: rgba(255,255,255,0.1); }
+        
+        .option-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 4px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .option-card.high-confidence { border-left-color: var(--success); box-shadow: -2px 0 10px rgba(16, 185, 129, 0.2); }
+        .option-card.medium-confidence { border-left-color: #eab308; } /* Yellow */
+        .option-card.low-confidence { border-left-color: var(--danger); }
+
+        .score-badge {
+            display: inline-block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-copy-option {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-copy-option:hover { background: var(--primary); }
+
+        /* Modal CSS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center;
+            z-index: 9999; backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%; max-width: 400px;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;
+        }
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.95rem;
+        }
+        .history-date { color: var(--text-muted); }
+        .history-count { font-weight: 600; color: var(--accent); background: rgba(255,255,255,0.05); padding: 0.25rem 0.75rem; border-radius: 12px; }
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Cabeçalho -->
-        <div class="header">
+        <div class="header" style="position: relative;">
+            <button id="btnHistory" class="btn-history" style="position: absolute; top: 0; right: 0;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Registros
+            </button>
             <h1><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap MVP</h1>
             <p>Classificação e Respostas Humanizadas para ZG Soluções</p>
         </div>
@@ -399,16 +478,26 @@
                     <div class="loading-text">Analisando imagem...</div>
                 </div>
 
-                <!-- Área de Resultado (Resposta da IA) -->
-                <div class="result-container" id="resultContainer">
+                <!-- Área de Resultados (Múltiplas Opções) -->
+                <div id="optionsContainer" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
                     <div class="result-header">
-                        <div class="result-title"><i class="fa-solid fa-robot"></i> Resposta Sugerida</div>
-                        <button class="btn-copy" id="btnCopy">
-                            <i class="fa-regular fa-copy"></i> Copiar
-                        </button>
+                        <div class="result-title"><i class="fa-solid fa-robot"></i> Opções Sugeridas</div>
                     </div>
-                    <div class="result-content" id="resultContent"></div>
+                    <div id="optionsList"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Histórico -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="result-title"><i class="fa-solid fa-chart-line"></i> Registros de Tickets</h2>
+                <button id="btnCloseHistory" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- Registros inseridos via JS -->
             </div>
         </div>
     </div>
@@ -429,33 +518,36 @@
 
         // O System Prompt rigoroso com as instruções da ZG Soluções
         const SYSTEM_PROMPT = `Você é um analista de suporte da ZG Soluções.
-Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular uma resposta padronizada, extremamente breve, direta, clara e específica para o cliente.
+Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular 3 OPÇÕES diferentes de resposta padronizada para o cliente, variando levemente a abordagem, mas sempre focadas em serem diretas, claras e específicas.
 
-**Padrão Rigoroso de Resposta (Seja Breve):**
-Sua mensagem deve ir direto ao ponto, sem enrolação, estruturada OBRIGATORIAMENTE com os seguintes campos:
-- **Ticket:** [inserir número do ticket ou deixar [n° ticket]]
-- **Serviço Específico:** [inserir o serviço correspondente ou deixar [Serviço Específico]]
-- **Contexto:** [descrever o problema ou solicitação de forma muito clara, específica e resumida]
+**Obrigatório: Retorne APENAS um JSON válido** no seguinte formato exato (sem blocos de código Markdown, sem texto antes ou depois, apenas o JSON):
 
-**Regras estritas:**
-- Seja o mais conciso possível. Textos longos são proibidos; a comunicação deve ser prática.
-- Pense e aja como um analista da ZG Soluções em contato com o cliente.
+{
+  "opcoes": [
+    {
+      "ticket": "[inserir número do ticket ou deixar [n° ticket]]",
+      "servico": "[inserir o serviço correspondente ou deixar [Serviço Específico]]",
+      "cliente": "[nome do cliente identificado na imagem ou deixar [Nome do Cliente]]",
+      "contexto": "[problema ou solicitação de forma clara e resumida]",
+      "confianca": 94,
+      "texto_score": "🟢 Alta confiança — 94%",
+      "mensagem_final": "A equipe técnica já vai iniciar a tratativa e, assim que tivermos novidades, te damos um retorno diretamente pelo próprio chamado!",
+      "checklist": "📋 **Checklist de 30 segundos:**\\n* O cliente já mandou print, protocolo ou convênio? Não peça de novo.\\n* Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?\\n* Se são vários chamados do mesmo cliente, consolidou numa mensagem só?\\n* Explicou por que está pedindo o ticket, ou só mandou pedir?"
+    }
+  ]
+}
+
+**Regras para o JSON e para as opções:**
+- Gere exatamente 3 objetos dentro do array "opcoes".
+- O campo "confianca" deve ser um número de 0 a 100 baseado em quão claro está o problema na imagem.
+- O "texto_score" deve refletir a nota:
+   * Acima de 80: "🟢 Alta confiança — [X]%"
+   * Entre 50 e 80: "🟡 Confiança moderada — [X]%"
+   * Abaixo de 50: "🔴 Baixa confiança — [X]%"
+- ATENÇÃO: NUNCA cite ou inclua "ÁREA DE SERVIÇO" em sua resposta. Utilize estritamente os campos listados no JSON.
 - NUNCA invente informações, não prometa prazos e não afirme que algo foi resolvido se não foi.
-- É PROIBIDO dizer que a equipe técnica "já está analisando" ou "está verificando" o problema. Sempre use o tempo futuro, indicando que a equipe "em breve irá analisar" ou "iniciará a tratativa".
-- Utilize corretamente o glossário da empresa: Zerinho, Triagem, Ticket/Chamado, Enxame, Mensagem interna, Portação, Priorização, Pré-validação, Reabertura, Condução.
-- Mantenha campos variáveis entre colchetes intactos caso precise que o humano preencha (ex: [Nome]).
-
-Ao final da mensagem ao cliente, adicione OBRIGATORIAMENTE o seguinte texto (exatamente como escrito):
-"A equipe técnica já vai iniciar a tratativa e, assim que tivermos novidades, te damos um retorno diretamente pelo próprio chamado!"
-
-Após a resposta ao cliente, adicione OBRIGATORIAMENTE o seguinte bloco de texto na tela (para o próprio analista revisar):
----
-📋 **Checklist de 30 segundos:**
-* O cliente já mandou print, protocolo ou convênio? Não peça de novo.
-* Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?
-* Se são vários chamados do mesmo cliente, consolidou numa mensagem só?
-* Explicou por que está pedindo o ticket, ou só mandou pedir?
----`;
+- É PROIBIDO dizer que a equipe técnica "já está analisando" ou "está verificando". Sempre use o tempo futuro.
+- Utilize corretamente o glossário da empresa: Zerinho, Triagem, Ticket/Chamado, Enxame, Mensagem interna, Portação, Priorização, Pré-validação, Reabertura, Condução.`;
 
         // Elementos da Interface
         const pasteZone = document.getElementById('pasteZone');
@@ -479,25 +571,60 @@ Após a resposta ao cliente, adicione OBRIGATORIAMENTE o seguinte bloco de texto
         // Escuta o evento de colar no documento (facilita o uso do usuário)
         document.addEventListener('paste', handlePasteEvent);
 
-        // Funcionalidade de Copiar para a Área de Transferência
-        btnCopy.addEventListener('click', async () => {
-            const textToCopy = resultContent.innerText; // Pega o texto mantendo as quebras de linha
-            try {
-                await navigator.clipboard.writeText(textToCopy);
-                
-                // Feedback visual do botão
-                const originalHtml = btnCopy.innerHTML;
-                btnCopy.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                btnCopy.style.background = 'var(--success)';
-                
-                setTimeout(() => {
-                    btnCopy.innerHTML = originalHtml;
-                    btnCopy.style.background = '';
-                }, 2000);
-            } catch (err) {
-                showError("Erro ao tentar copiar o texto.");
+        // Modal History Logic
+        const btnHistory = document.getElementById('btnHistory');
+        const btnCloseHistory = document.getElementById('btnCloseHistory');
+        const historyModal = document.getElementById('historyModal');
+        const historyList = document.getElementById('historyList');
+        
+        function updateHistory(increment = false) {
+            let historyStr = localStorage.getItem('helpzap_history') || '{}';
+            let history = JSON.parse(historyStr);
+            let today = new Date().toLocaleDateString('pt-BR');
+            
+            if (increment) {
+                history[today] = (history[today] || 0) + 1;
+                localStorage.setItem('helpzap_history', JSON.stringify(history));
             }
-        });
+            return history;
+        }
+
+        function renderHistory() {
+            let history = updateHistory(false);
+            historyList.innerHTML = '';
+            
+            let dates = Object.keys(history).sort((a,b) => {
+                let da = a.split('/').reverse().join('-');
+                let db = b.split('/').reverse().join('-');
+                return new Date(db) - new Date(da);
+            });
+            
+            if (dates.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 1rem;">Nenhum registro ainda.</div>';
+                return;
+            }
+            
+            dates.forEach(date => {
+                let div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<span class="history-date">${date}</span> <span class="history-count">${history[date]} tickets</span>`;
+                historyList.appendChild(div);
+            });
+        }
+        
+        if (btnHistory) {
+            btnHistory.addEventListener('click', () => {
+                renderHistory();
+                historyModal.style.display = 'flex';
+            });
+        }
+        
+        if (btnCloseHistory) {
+            btnCloseHistory.addEventListener('click', () => {
+                historyModal.style.display = 'none';
+            });
+        }
+
 
         /**
          * Funções Auxiliares
@@ -564,7 +691,7 @@ Após a resposta ao cliente, adicione OBRIGATORIAMENTE o seguinte bloco de texto
                 
                 // Prepara a UI para o estado de carregamento
                 document.getElementById('mainGrid').style.display = 'grid';
-                resultContainer.style.display = 'none';
+                document.getElementById('optionsContainer').style.display = 'none';
                 loadingContainer.style.display = 'flex';
                 pasteZone.style.display = 'none'; 
 
@@ -665,15 +792,81 @@ Após a resposta ao cliente, adicione OBRIGATORIAMENTE o seguinte bloco de texto
 
                 let generatedText = successfulResponse;
                 
-                // Converte marcações de negrito Markdown (**texto**) para tag HTML <strong>
-                generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                
-                // Renderiza o texto
-                resultContent.innerHTML = generatedText;
+                // Extrai JSON
+                try {
+                    let jsonStr = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    // Tratamento para caso o modelo responda algum texto antes/depois do JSON
+                    const jsonStart = jsonStr.indexOf('{');
+                    const jsonEnd = jsonStr.lastIndexOf('}');
+                    if (jsonStart !== -1 && jsonEnd !== -1) {
+                         jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+                    }
+
+                    let data = JSON.parse(jsonStr);
+                    
+                    const optionsList = document.getElementById('optionsList');
+                    optionsList.innerHTML = ''; // Limpa opções anteriores
+                    
+                    if (!data.opcoes || data.opcoes.length === 0) {
+                        throw new Error("Nenhuma opção gerada.");
+                    }
+
+                    data.opcoes.forEach((opcao, index) => {
+                        let confidenceClass = 'low-confidence';
+                        if (opcao.confianca >= 80) confidenceClass = 'high-confidence';
+                        else if (opcao.confianca >= 50) confidenceClass = 'medium-confidence';
+                        
+                        let card = document.createElement('div');
+                        card.className = `option-card ${confidenceClass}`;
+                        
+                        let formattedText = `**Ticket:** ${opcao.ticket}\n**Serviço Específico:** ${opcao.servico}\n**Nome do Cliente:** ${opcao.cliente}\n**Contexto:** ${opcao.contexto}\n\n${opcao.mensagem_final}\n\n---\n${opcao.checklist}`;
+                        
+                        let htmlText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                        
+                        card.innerHTML = `
+                            <div class="score-badge">${opcao.texto_score}</div>
+                            <button class="btn-copy-option" data-text="${encodeURIComponent(formattedText)}">
+                                <i class="fa-regular fa-copy"></i> Copiar
+                            </button>
+                            <div class="option-content">${htmlText}</div>
+                        `;
+                        
+                        optionsList.appendChild(card);
+                    });
+                    
+                    // Adiciona eventos de clique nos novos botões de copiar
+                    document.querySelectorAll('.btn-copy-option').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const btnTarget = e.currentTarget;
+                            const textToCopy = decodeURIComponent(btnTarget.getAttribute('data-text'));
+                            try {
+                                await navigator.clipboard.writeText(textToCopy);
+                                
+                                const originalHtml = btnTarget.innerHTML;
+                                btnTarget.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                                btnTarget.style.background = 'var(--success)';
+                                
+                                updateHistory(true); // Incrementa o histórico!
+                                
+                                setTimeout(() => {
+                                    btnTarget.innerHTML = originalHtml;
+                                    btnTarget.style.background = '';
+                                }, 2000);
+                            } catch(err) {
+                                showError("Erro ao copiar.");
+                            }
+                        });
+                    });
+                    
+                } catch (e) {
+                    console.error(e);
+                    throw new Error("A IA não retornou um formato JSON válido. Tente novamente.");
+                }
                 
                 // Atualiza a UI
                 loadingContainer.style.display = 'none';
-                resultContainer.style.display = 'block';
+                document.getElementById('optionsContainer').style.display = 'flex';
                 
                 // Rola suavemente até o grid
                 document.getElementById('mainGrid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
