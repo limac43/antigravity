@@ -3,887 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helpzap MVP - ZG Soluções</title>
+    <title>Helpzap AI - Support Command</title>
     <!-- Modern Typography: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* =========================================
-           DESIGN TOKENS E VARIÁVEIS (Dark Mode)
-           ========================================= */
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b);
-            --card-bg: rgba(30, 41, 59, 0.65);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --primary: #1ed760;       /* Green */
-            --primary-hover: #1fdf64; /* Green hover */
-            --accent: #22d3ee;        /* Cyan 400 */
+            --bg-sidebar: #0A101D;
+            --bg-main: #0B1121;
+            --card-bg: #111827;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #1ed760; /* Neon Green */
+            --primary-hover: #1fdf64;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --success: #10b981;       /* Emerald 500 */
-            --danger: #ef4444;        /* Red 500 */
+            --danger: #ef4444;
+            --success-bg: rgba(30, 215, 96, 0.1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            line-height: 1.6;
-        }
-
-        /* =========================================
-           COMPONENTES: Container & Header
-           ========================================= */
-        .container {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 3rem;
-            width: 100%;
-            max-width: 1100px; /* Aumentado para layout lado a lado */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            transition: max-width 0.3s ease;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
         
-        /* Barra de destaque superior */
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 5px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-            animation: fadeInDown 0.6s ease-out;
-        }
-
-        .header h1 {
-            font-size: 2.75rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            /* Texto em gradiente */
-            background: linear-gradient(to right, #c084fc, #22d3ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 1.15rem;
-        }
-
-        /* =========================================
-           COMPONENTES: Configuração da API
-           ========================================= */
-        .setup-container {
-            margin-bottom: 2.5rem;
-            background: rgba(15, 23, 42, 0.5);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .setup-container:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
+        /* Dashboard Layout */
+        .dashboard-layout { display: flex; width: 100%; height: 100%; }
         
-        .setup-container input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: monospace;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .setup-container input::placeholder {
-            color: var(--text-muted);
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* =========================================
-           COMPONENTES: Paste Zone (Zona de Colagem)
-           ========================================= */
-        .paste-zone {
-            border: 2px dashed var(--primary);
-            border-radius: 16px;
-            padding: 4rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(99, 102, 241, 0.05);
-            position: relative;
-        }
-
-        .paste-zone:hover, .paste-zone:focus {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: var(--accent);
-            transform: translateY(-4px);
-            outline: none;
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
-        }
-
-        .paste-icon {
-            font-size: 3.5rem;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .paste-zone:hover .paste-icon {
-            transform: scale(1.15) rotate(-5deg);
-            color: var(--accent);
-        }
-
-        .paste-text {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .paste-subtext {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            margin-top: 0.75rem;
-        }
-
-        /* =========================================
-           COMPONENTES: Loading & Status
-           ========================================= */
-        .loading-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 300px;
-            padding: 2rem;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 16px;
-            border: 1px dashed var(--card-border);
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1.5rem;
-        }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 1.5rem; }
+        .sidebar-brand { font-size: 1.25rem; font-weight: 700; color: white; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 2rem; }
+        .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .loading-text {
-            color: var(--accent);
-            font-size: 1.1rem;
-            font-weight: 500;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        /* Error Message */
-        .error-msg {
-            color: #fca5a5;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-top: 1.5rem;
-            display: none;
-            text-align: center;
-            font-weight: 500;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        /* =========================================
-           COMPONENTES: Área de Resultado
-           ========================================= */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @media (min-width: 850px) {
-            .main-grid {
-                grid-template-columns: 1fr 1.2fr;
-                align-items: start;
-            }
-        }
-
-        .hint-text {
-            margin-top: 1rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
-
-        .image-preview {
-            max-width: 100%;
-            border-radius: 12px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            display: block;
-        }
-
-        .result-container {
-            display: none;
-            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            height: 100%;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .result-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-copy {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Inter', sans-serif;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-copy:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-copy:active {
-            transform: translateY(0);
-        }
-
-        .result-content {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 1.75rem;
-            white-space: pre-wrap; /* Mantém as quebras de linha */
-            font-size: 1.05rem;
-            color: #e2e8f0;
-            overflow-x: auto;
-            line-height: 1.7;
-        }
+        .btn-new-analysis { background: var(--primary); color: #0A101D; font-weight: 600; border: none; border-radius: 8px; padding: 0.75rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s; margin-bottom: 2rem; font-family: inherit; }
+        .btn-new-analysis:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,215,96,0.2); }
         
-        .result-content strong {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        /* =========================================
-           ANIMAÇÕES (Micro-interações)
-           ========================================= */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Multi-options and History CSS */
-        .btn-history {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-        }
-        .btn-history:hover { background: rgba(255,255,255,0.1); }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s; font-size: 0.95rem; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+        .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item i { font-size: 1.1rem; width: 20px; }
         
-        .option-card {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-left: 4px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 1.75rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        .option-card.high-confidence { border-left-color: var(--success); box-shadow: -2px 0 10px rgba(16, 185, 129, 0.2); }
-        .option-card.medium-confidence { border-left-color: #eab308; } /* Yellow */
-        .option-card.low-confidence { border-left-color: var(--danger); }
-
-        .score-badge {
-            display: inline-block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+        .sidebar-footer { border-top: 1px solid var(--card-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
         
-        .btn-copy-option {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .btn-copy-option:hover { background: var(--primary); }
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
+        .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+        .top-header h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .top-header .subtitle { color: var(--text-muted); font-size: 1rem; }
+        .status-badge { background: var(--success-bg); color: var(--primary); border: 1px solid var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* Grid Layout */
+        .results-grid { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; animation: fadeIn 0.4s ease; }
+        .col-left { display: flex; flex-direction: column; gap: 1.5rem; }
+        .col-right { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        /* Cards */
+        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+        .card-body { padding: 1.25rem; }
+        
+        /* Specific Cards */
+        .card-screenshot { background: transparent; }
+        .card-screenshot .card-body { padding: 0; background: #080D1A; display: flex; justify-content: center; align-items: center; min-height: 200px;}
+        .card-screenshot img { max-width: 100%; height: auto; display: block; border-radius: 0 0 12px 12px; opacity: 0.8; }
+        
+        .card-checklist .card-header { border-bottom: none; padding-bottom: 0.5rem; }
+        .checklist-item { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; }
+        .checklist-icon { font-size: 1.2rem; margin-top: 2px; }
+        .icon-check { color: var(--primary); }
+        .icon-empty { color: var(--text-muted); }
+        .checklist-text { font-weight: 500; font-size: 0.95rem; }
+        .checklist-subtext { font-size: 0.85rem; color: var(--primary); margin-top: 0.15rem; }
+        .checklist-subtext.muted { color: var(--text-muted); }
 
-        /* Modal CSS */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center;
-            z-index: 9999; backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 90%; max-width: 400px;
-            max-height: 80vh; overflow-y: auto;
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;
-        }
-        .history-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.95rem;
-        }
-        .history-date { color: var(--text-muted); }
-        .history-count { font-weight: 600; color: var(--accent); background: rgba(255,255,255,0.05); padding: 0.25rem 0.75rem; border-radius: 12px; }
+        .card-scenario { display: flex; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 12px; background: rgba(30, 215, 96, 0.03); }
+        .scenario-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--success-bg); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 1.25rem; flex-shrink: 0; }
+        .scenario-label { color: var(--primary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+        .scenario-content h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .scenario-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
 
+        .card-response { flex: 1; display: flex; flex-direction: column; }
+        .response-actions { display: flex; gap: 1rem; color: var(--text-muted); }
+        .response-actions i { cursor: pointer; transition: 0.2s; }
+        .response-actions i:hover { color: white; }
+        
+        .response-text { font-size: 1.05rem; line-height: 1.7; color: #e2e8f0; flex: 1; white-space: pre-wrap; padding: 1.5rem; }
+        .tag-green { background: var(--success-bg); color: var(--primary); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+        
+        .card-response .card-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--card-border); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.1); }
+        
+        /* Upload Area */
+        .upload-area { max-width: 600px; margin: 4rem auto; }
+        .setup-container { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1rem 1.5rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+        .setup-container input { flex: 1; background: transparent; border: none; color: white; outline: none; font-family: inherit; }
+        .paste-zone { border: 2px dashed var(--primary); border-radius: 12px; padding: 4rem 2rem; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(30, 215, 96, 0.05); }
+        .paste-zone:hover { background: rgba(30, 215, 96, 0.1); }
+        .paste-icon { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
+        .paste-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+        
+        .loading-container { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; grid-column: 1 / -1; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(30, 215, 96, 0.3); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; width: 400px; padding: 1.5rem; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1rem; }
+        .history-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Helpzap AI</div>
+                <span class="sidebar-subtitle">Support Command</span>
+            </div>
+            <button class="btn-new-analysis" onclick="resetUI()"><i class="fa-solid fa-plus"></i> New Analysis</button>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+                <a href="#" class="nav-item" id="btnHistory"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="#" class="nav-item"><i class="fa-regular fa-lightbulb"></i> Insights</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item"><i class="fa-regular fa-circle-question"></i> Help</a>
+                <a href="#" class="nav-item"><i class="fa-regular fa-comment"></i> Feedback</a>
+            </div>
+        </aside>
 
-    <div class="container">
-        <div class="header" style="position: relative;">
-            <button id="btnHistory" class="btn-history" style="position: absolute; top: 0; right: 0;">
-                <i class="fa-solid fa-clock-rotate-left"></i> Registros
-            </button>
-            <h1><i class="fa-solid fa-bolt" style="color: var(--accent);"></i> Helpzap MVP</h1>
-            <p>Classificação e Respostas Humanizadas para ZG Soluções</p>
-        </div>
-        
-        <!-- Input da Chave de API -->
-        <div class="setup-container">
-            <i class="fa-solid fa-key" style="color: var(--text-muted); font-size: 1.2rem;"></i>
-            <input type="password" id="apiKeyInput" placeholder="Insira sua Chave da API do Gemini 1.5 Flash..." autocomplete="off">
-        </div>
-
-        <!-- Zona de Colagem (Paste Zone) -->
-        <div class="paste-zone" id="pasteZone" tabindex="0">
-            <i class="fa-regular fa-image paste-icon"></i>
-            <div class="paste-text">Clique aqui e pressione Ctrl+V para colar a imagem do WhatsApp</div>
-            <div class="paste-subtext">A imagem será analisada automaticamente pela Inteligência Artificial.</div>
-        </div>
-
-        <!-- Mensagens de Erro -->
-        <div class="error-msg" id="errorMsg"></div>
-
-        <div class="main-grid" id="mainGrid" style="display: none;">
-            <!-- Painel Esquerdo: Imagem e Dica -->
-            <div class="left-panel">
-                <img id="imagePreview" class="image-preview" alt="Preview do print anexado">
-                <div class="hint-text">
-                    <i class="fa-solid fa-bolt"></i> Dica: Pressione Ctrl+V para analisar um novo print!
+        <main class="main-content">
+            <div class="top-header">
+                <div>
+                    <h2>Analysis Results</h2>
+                    <p class="subtitle" id="analysisSubtitle">Awaiting image upload...</p>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <i class="fa-regular fa-circle-check"></i> Analysis Complete
                 </div>
             </div>
             
-            <!-- Painel Direito: Loading e Resultado -->
-            <div class="right-panel">
-                <!-- Indicador de Carregamento -->
-                <div class="loading-container" id="loadingContainer">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Analisando imagem...</div>
-                </div>
+            <div id="errorMsg" style="display:none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; color: #fca5a5; margin-bottom: 1rem; text-align: center;"></div>
 
-                <!-- Área de Resultados (Múltiplas Opções) -->
-                <div id="optionsContainer" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
-                    <div class="result-header">
-                        <div class="result-title"><i class="fa-solid fa-robot"></i> Opções Sugeridas</div>
-                    </div>
-                    <div id="optionsList"></div>
+            <!-- Upload Area -->
+            <div id="uploadArea" class="upload-area">
+                <div class="setup-container" id="apiKeyContainer">
+                    <i class="fa-solid fa-key text-muted"></i>
+                    <input type="password" id="apiKeyInput" placeholder="API Key do Gemini..." autocomplete="off">
+                </div>
+                <div class="paste-zone" id="pasteZone" tabindex="0">
+                    <i class="fa-regular fa-image paste-icon"></i>
+                    <div class="paste-text">Pressione Ctrl+V para colar a imagem</div>
+                    <div class="checklist-subtext muted">A imagem será analisada magicamente pela IA.</div>
                 </div>
             </div>
-        </div>
+            
+            <div class="loading-container" id="loadingContainer">
+                <div class="spinner"></div>
+                <div style="color: var(--primary); font-weight: 500;">Analisando cenário...</div>
+            </div>
+
+            <!-- Results Grid -->
+            <div id="resultsGrid" class="results-grid">
+                <div class="col-left">
+                    <div class="card card-screenshot">
+                        <div class="card-header">
+                            <span class="card-title">Source Screenshot</span>
+                            <i class="fa-regular fa-image" style="color: var(--text-muted);"></i>
+                        </div>
+                        <div class="card-body">
+                            <img id="imagePreview" src="" alt="Screenshot">
+                        </div>
+                    </div>
+
+                    <div class="card card-checklist">
+                        <div class="card-header">
+                            <i class="fa-regular fa-square-check" style="color: var(--primary); font-size: 1.5rem; margin-right: 0.5rem;"></i>
+                            <span class="card-title" style="font-size: 1.25rem; color: white;">Checklist de 30 Segundos</span>
+                        </div>
+                        <div class="card-body" id="checklistContainer">
+                            <!-- Injetado via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div class="card-scenario">
+                        <div class="scenario-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+                        <div class="scenario-content">
+                            <div class="scenario-label">CENÁRIO IDENTIFICADO</div>
+                            <h3 id="scenarioTitle">Analisando...</h3>
+                            <p id="scenarioDesc">...</p>
+                        </div>
+                    </div>
+
+                    <div class="card card-response">
+                        <div class="card-header">
+                            <span class="card-title"><i class="fa-solid fa-list-check"></i> Suggested Response</span>
+                            <div class="response-actions">
+                                <i class="fa-regular fa-thumbs-up"></i>
+                                <i class="fa-regular fa-thumbs-down"></i>
+                                <i class="fa-solid fa-arrow-rotate-right"></i>
+                            </div>
+                        </div>
+                        <div class="card-body response-text" id="responseText">
+                            <!-- Injetado via JS -->
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnCopyResult" class="btn-new-analysis" style="margin: 0; padding: 0.6rem 1.2rem;"><i class="fa-regular fa-copy"></i> Copiar Resposta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Modal de Histórico -->
+    <!-- Modal -->
     <div class="modal-overlay" id="historyModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="result-title"><i class="fa-solid fa-chart-line"></i> Registros de Tickets</h2>
-                <button id="btnCloseHistory" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+                <h3 style="color: white;"><i class="fa-solid fa-clock-rotate-left"></i> History</h3>
+                <button id="btnCloseHistory" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="history-list" id="historyList">
-                <!-- Registros inseridos via JS -->
-            </div>
+            <div id="historyList"></div>
         </div>
     </div>
 
     <script type="module">
         import { GoogleGenAI } from 'https://esm.run/@google/genai';
 
-        /**
-         * =========================================
-         *  HELPZAP MVP - LÓGICA DO APLICATIVO
-         * =========================================
-         */
-
-        // Constantes da API
-        // Você pode definir uma chave fixa aqui, caso prefira não digitar na tela.
         const HARDCODED_API_KEY = ""; 
-        const GEMINI_MODEL = "gemini-3.5-flash"; // Atualizado para a nova versão solicitada
+        const SYSTEM_PROMPT = `Você é um analista sênior de suporte da ZG Soluções.
+Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, direta e clara.
 
-        // O System Prompt rigoroso com as instruções da ZG Soluções
-        const SYSTEM_PROMPT = `Você é um analista de suporte da ZG Soluções.
-Sua tarefa é analisar a imagem da conversa de WhatsApp anexada e formular 3 OPÇÕES diferentes de resposta padronizada para o cliente, variando levemente a abordagem, mas sempre focadas em serem diretas, claras e específicas.
-
-**Obrigatório: Retorne APENAS um JSON válido** no seguinte formato exato (sem blocos de código Markdown, sem texto antes ou depois, apenas o JSON):
-
+**OBRIGATÓRIO: Retorne APENAS um objeto JSON válido** no seguinte formato exato (sem \`\`\`json ou texto adicional):
 {
-  "opcoes": [
-    {
-      "ticket": "[inserir número do ticket ou deixar [n° ticket]]",
-      "servico": "[inserir o serviço correspondente ou deixar [Serviço Específico]]",
-      "cliente": "[nome do cliente identificado na imagem ou deixar [Nome do Cliente]]",
-      "contexto": "[problema ou solicitação de forma clara e resumida]",
-      "confianca": 94,
-      "texto_score": "🟢 Alta confiança — 94%",
-      "mensagem_final": "A equipe técnica já vai iniciar a tratativa e, assim que tivermos novidades, te damos um retorno diretamente pelo próprio chamado!",
-      "checklist": "📋 **Checklist de 30 segundos:**\\n* O cliente já mandou print, protocolo ou convênio? Não peça de novo.\\n* Dá pra confirmar o problema no sistema antes de falar 'abre ticket'?\\n* Se são vários chamados do mesmo cliente, consolidou numa mensagem só?\\n* Explicou por que está pedindo o ticket, ou só mandou pedir?"
-    }
+  "scenario": "Nome curto do cenário (ex: Segunda cobrança, Status do Ticket, Portação, etc)",
+  "scenario_description": "Breve justificativa em inglês ou português de por que esse cenário foi identificado, ex: 'AI detected a high probability of...'",
+  "suggested_response": "Olá, [Nome] 👋\\n\\n[Corpo da mensagem clara e direta, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
+  "checklist": [
+    { "text": "Identificou o cliente?", "subtext": "Ex: Perfil ou ID verificado.", "checked": true },
+    { "text": "Conferiu o número do ticket?", "subtext": "Ex: Verificar tickets ativos.", "checked": false },
+    { "text": "Tom de voz ZG aplicado?", "subtext": "Claro, direto e cordial.", "checked": true }
   ]
 }
 
-**Regras para o JSON e para as opções:**
-- Gere exatamente 3 objetos dentro do array "opcoes".
-- O campo "confianca" deve ser um número de 0 a 100 baseado em quão claro está o problema na imagem.
-- O "texto_score" deve refletir a nota:
-   * Acima de 80: "🟢 Alta confiança — [X]%"
-   * Entre 50 e 80: "🟡 Confiança moderada — [X]%"
-   * Abaixo de 50: "🔴 Baixa confiança — [X]%"
-- ATENÇÃO: NUNCA cite ou inclua "ÁREA DE SERVIÇO" em sua resposta. Utilize estritamente os campos listados no JSON.
-- NUNCA invente informações, não prometa prazos e não afirme que algo foi resolvido se não foi.
-- É PROIBIDO dizer que a equipe técnica "já está analisando" ou "está verificando". Sempre use o tempo futuro.
-- Utilize corretamente o glossário da empresa: Zerinho, Triagem, Ticket/Chamado, Enxame, Mensagem interna, Portação, Priorização, Pré-validação, Reabertura, Condução.`;
+**Regras estritas para a Resposta:**
+- Seja o mais conciso possível. Textos longos são proibidos.
+- NUNCA invente informações. 
+- PROIBIDO dizer "já está analisando" ou "está verificando". Sempre use o tempo futuro: "em breve irá analisar" ou "iniciará a tratativa".
+- Não peça número de protocolo se o cliente já enviou.
+- Mensagem final obrigatória da response: "A equipe técnica já vai iniciar a tratativa e, assim que tivermos novidades, te damos um retorno diretamente pelo próprio chamado!"
+- Utilize a notação exata [Nome] e [Ticket] no texto (isso será estilizado pelo frontend).`;
 
-        // Elementos da Interface
         const pasteZone = document.getElementById('pasteZone');
-        const imagePreview = document.getElementById('imagePreview');
-        const loadingContainer = document.getElementById('loadingContainer');
-        const resultContainer = document.getElementById('resultContainer');
-        const resultContent = document.getElementById('resultContent');
-        const errorMsg = document.getElementById('errorMsg');
-        const btnCopy = document.getElementById('btnCopy');
         const apiKeyInput = document.getElementById('apiKeyInput');
-
-        /**
-         * Event Listeners
-         */
-        
-        // Foca a Paste Zone ao clicar nela para garantir a captura do Ctrl+V
-        pasteZone.addEventListener('click', () => {
-            pasteZone.focus();
-        });
-
-        // Escuta o evento de colar no documento (facilita o uso do usuário)
-        document.addEventListener('paste', handlePasteEvent);
-
-        // Modal History Logic
+        const errorMsg = document.getElementById('errorMsg');
         const btnHistory = document.getElementById('btnHistory');
-        const btnCloseHistory = document.getElementById('btnCloseHistory');
-        const historyModal = document.getElementById('historyModal');
-        const historyList = document.getElementById('historyList');
         
-        function updateHistory(increment = false) {
-            let historyStr = localStorage.getItem('helpzap_history') || '{}';
-            let history = JSON.parse(historyStr);
-            let today = new Date().toLocaleDateString('pt-BR');
-            
-            if (increment) {
-                history[today] = (history[today] || 0) + 1;
-                localStorage.setItem('helpzap_history', JSON.stringify(history));
-            }
-            return history;
-        }
+        // Esconde UI de resultados no início
+        document.getElementById('resultsGrid').style.display = 'none';
 
-        function renderHistory() {
-            let history = updateHistory(false);
-            historyList.innerHTML = '';
-            
-            let dates = Object.keys(history).sort((a,b) => {
-                let da = a.split('/').reverse().join('-');
-                let db = b.split('/').reverse().join('-');
-                return new Date(db) - new Date(da);
-            });
-            
-            if (dates.length === 0) {
-                historyList.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 1rem;">Nenhum registro ainda.</div>';
-                return;
-            }
-            
-            dates.forEach(date => {
-                let div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `<span class="history-date">${date}</span> <span class="history-count">${history[date]} tickets</span>`;
-                historyList.appendChild(div);
-            });
-        }
-        
-        if (btnHistory) {
-            btnHistory.addEventListener('click', () => {
-                renderHistory();
-                historyModal.style.display = 'flex';
-            });
-        }
-        
-        if (btnCloseHistory) {
-            btnCloseHistory.addEventListener('click', () => {
-                historyModal.style.display = 'none';
-            });
-        }
-
-
-        /**
-         * Funções Auxiliares
-         */
-
-        function getApiKey() {
-            let key = apiKeyInput.value.trim();
-            if (!key) {
-                key = localStorage.getItem('helpzap_api_key') || '';
-            }
-            return key || HARDCODED_API_KEY;
-        }
-
-        function showError(message) {
-            errorMsg.innerText = message;
-            errorMsg.style.display = 'block';
-            loadingContainer.style.display = 'none';
-        }
-
-        function hideError() {
+        window.resetUI = function() {
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('resultsGrid').style.display = 'none';
+            document.getElementById('statusBadge').style.display = 'none';
+            document.getElementById('analysisSubtitle').innerText = 'Awaiting image upload...';
             errorMsg.style.display = 'none';
         }
 
-        /**
-         * Manipula o evento de colar (Ctrl+V)
-         */
-        async function handlePasteEvent(e) {
-            hideError();
+        pasteZone.addEventListener('click', () => pasteZone.focus());
+        document.addEventListener('paste', async (e) => {
+            errorMsg.style.display = 'none';
+            let key = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key') || HARDCODED_API_KEY;
             
-            // Valida chave de API
-            if (!getApiKey()) {
-                showError("Por favor, insira sua Chave de API do Gemini no campo superior.");
-                apiKeyInput.focus();
+            if (!key) {
+                errorMsg.innerText = "Por favor, insira sua Chave de API do Gemini.";
+                errorMsg.style.display = 'block';
                 return;
             }
 
-            // Obtém itens do clipboard
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
             let imageFile = null;
-
-            // Busca pela primeira imagem colada
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf("image") === 0) {
-                    imageFile = items[i].getAsFile();
-                    break;
+            for (let item of items) {
+                if (item.type.indexOf("image") === 0) {
+                    imageFile = item.getAsFile(); break;
                 }
             }
 
-            if (!imageFile) {
-                // Silenciosamente ignora colagens de texto para evitar erros chatos se o usuário só copiou a API Key
-                if(items[0].type.indexOf("text") !== 0) {
-                   showError("Nenhuma imagem detectada. Por favor, cole um print de tela do WhatsApp.");
-                }
-                return;
-            }
+            if (!imageFile) return;
 
-            // Lê a imagem como Base64 para mostrar no preview e enviar pra API
             const reader = new FileReader();
-            reader.onload = async function(event) {
-                const base64DataUrl = event.target.result;
+            reader.onload = async (event) => {
+                const base64Data = event.target.result;
+                document.getElementById('imagePreview').src = base64Data;
                 
-                // Exibe o preview da imagem
-                imagePreview.src = base64DataUrl;
-                
-                // Prepara a UI para o estado de carregamento
-                document.getElementById('mainGrid').style.display = 'grid';
-                document.getElementById('optionsContainer').style.display = 'none';
-                loadingContainer.style.display = 'flex';
-                pasteZone.style.display = 'none'; 
+                document.getElementById('uploadArea').style.display = 'none';
+                document.getElementById('loadingContainer').style.display = 'flex';
 
-                // Extrai apenas a string base64, removendo o prefixo "data:image/jpeg;base64,"
-                const base64Content = base64DataUrl.split(',')[1];
-                const mimeType = imageFile.type;
-
-                // Chama a função que consome a API do Gemini
-                await processImageWithGemini(base64Content, mimeType);
+                await processAPI(base64Data.split(',')[1], imageFile.type, key);
             };
-            
             reader.readAsDataURL(imageFile);
-        }
+        });
 
-        /**
-         * Envia a imagem e o prompt para a API do Gemini
-         */
-        async function processImageWithGemini(base64Content, mimeType) {
-            const apiKey = getApiKey();
-            
-            if (!apiKey || apiKey === '') {
-                const apiKeyContainer = document.querySelector('.setup-container');
-                if (apiKeyContainer) apiKeyContainer.style.display = 'block';
-                showError("Por favor, cole sua Chave de API válida no campo superior.");
-                document.getElementById('mainGrid').style.display = 'none';
-                pasteZone.style.display = 'block';
-                return;
-            }
-            
+        async function processAPI(base64, mimeType, key) {
             try {
-                // Inicializa o SDK com a chave
-                const ai = new GoogleGenAI({ apiKey: apiKey });
-
-                // Lista padrão de modelos
-                const defaultModels = [
-                    'gemini-3.6-flash',
-                    'gemini-3.7-flash'
-                ];
-                
+                const ai = new GoogleGenAI({ apiKey: key });
+                const defaultModels = ['gemini-3.6-flash', 'gemini-3.7-flash'];
                 const savedModel = localStorage.getItem('helpzap_successful_model');
-                const modelsToTry = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
-
-                let successfulResponse = null;
-                let errors = [];
-
-                for (const model of modelsToTry) {
+                const models = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
+                
+                let successResponse = null;
+                for (let model of models) {
                     try {
                         const response = await ai.models.generateContent({
                             model: model,
-                            contents: [
-                                SYSTEM_PROMPT,
-                                {
-                                    inlineData: {
-                                        data: base64Content,
-                                        mimeType: mimeType
-                                    }
-                                }
-                            ],
-                            config: {
-                                temperature: 0.4 // Temperatura ajustada para criatividade empática controlada
-                            }
+                            contents: [ SYSTEM_PROMPT, { inlineData: { data: base64, mimeType: mimeType } } ],
+                            config: { temperature: 0.3 }
                         });
-                        
-                        if (response.text) {
-                            successfulResponse = response.text;
-                            
-                            // Salva chave e modelo que funcionaram "por baixo dos panos"
-                            localStorage.setItem('helpzap_successful_model', model);
-                            localStorage.setItem('helpzap_api_key', apiKey);
-                            console.log(`Sucesso utilizando o modelo: ${model}`);
-                            
-                            // Esconde a chave da UI para o usuário final
-                            const apiKeyContainer = document.querySelector('.setup-container');
-                            if (apiKeyContainer) apiKeyContainer.style.display = 'none';
-
-                            break; // Sucesso! Sai do loop de tentativas
-                        }
-                    } catch (error) {
-                        errors.push(`${model}: ${error.message}`);
-                        console.warn(`Tentativa com o modelo ${model} falhou:`, error.message);
-                        
-                        if (error.message.includes("403") || error.message.includes("401") || error.message.includes("API key not valid")) {
-                            localStorage.removeItem('helpzap_api_key');
-                            const apiKeyContainer = document.querySelector('.setup-container');
-                            if (apiKeyContainer) apiKeyContainer.style.display = 'block';
-                            throw new Error(`Chave de API inválida ou sem permissão. Verifique sua chave.`);
-                        }
-                        if (error.message.includes("429")) {
-                            throw new Error(`Limite de uso atingido (Quota Exceeded / 429) no modelo ${model}. Aguarde alguns instantes.`);
-                        }
+                        successResponse = response.text;
+                        localStorage.setItem('helpzap_api_key', key);
+                        localStorage.setItem('helpzap_successful_model', model);
+                        if (document.getElementById('apiKeyContainer')) document.getElementById('apiKeyContainer').style.display = 'none';
+                        break;
+                    } catch (e) {
+                        console.warn(e);
                     }
                 }
 
-                if (!successfulResponse) {
-                    throw new Error(`Modelos indisponíveis. Erros: ${errors.join(' | ')}`);
-                }
+                if (!successResponse) throw new Error("A API falhou para todos os modelos configurados. Verifique sua chave.");
 
-                let generatedText = successfulResponse;
+                let jsonStr = successResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                const start = jsonStr.indexOf('{');
+                const end = jsonStr.lastIndexOf('}');
+                if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
                 
-                // Extrai JSON
-                try {
-                    let jsonStr = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    
-                    // Tratamento para caso o modelo responda algum texto antes/depois do JSON
-                    const jsonStart = jsonStr.indexOf('{');
-                    const jsonEnd = jsonStr.lastIndexOf('}');
-                    if (jsonStart !== -1 && jsonEnd !== -1) {
-                         jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
-                    }
+                const data = JSON.parse(jsonStr);
 
-                    let data = JSON.parse(jsonStr);
-                    
-                    const optionsList = document.getElementById('optionsList');
-                    optionsList.innerHTML = ''; // Limpa opções anteriores
-                    
-                    if (!data.opcoes || data.opcoes.length === 0) {
-                        throw new Error("Nenhuma opção gerada.");
-                    }
+                // Render Scenario
+                document.getElementById('scenarioTitle').innerText = data.scenario;
+                document.getElementById('scenarioDesc').innerText = data.scenario_description;
+                document.getElementById('analysisSubtitle').innerText = `Ticket - ${data.scenario}`;
 
-                    data.opcoes.forEach((opcao, index) => {
-                        let confidenceClass = 'low-confidence';
-                        if (opcao.confianca >= 80) confidenceClass = 'high-confidence';
-                        else if (opcao.confianca >= 50) confidenceClass = 'medium-confidence';
-                        
-                        let card = document.createElement('div');
-                        card.className = `option-card ${confidenceClass}`;
-                        
-                        let formattedText = `**Ticket:** ${opcao.ticket}\n**Serviço Específico:** ${opcao.servico}\n**Nome do Cliente:** ${opcao.cliente}\n**Contexto:** ${opcao.contexto}\n\n${opcao.mensagem_final}\n\n---\n${opcao.checklist}`;
-                        
-                        let htmlText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-                        
-                        card.innerHTML = `
-                            <div class="score-badge">${opcao.texto_score}</div>
-                            <button class="btn-copy-option" data-text="${encodeURIComponent(formattedText)}">
-                                <i class="fa-regular fa-copy"></i> Copiar
-                            </button>
-                            <div class="option-content">${htmlText}</div>
-                        `;
-                        
-                        optionsList.appendChild(card);
-                    });
-                    
-                    // Adiciona eventos de clique nos novos botões de copiar
-                    document.querySelectorAll('.btn-copy-option').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            const btnTarget = e.currentTarget;
-                            const textToCopy = decodeURIComponent(btnTarget.getAttribute('data-text'));
-                            try {
-                                await navigator.clipboard.writeText(textToCopy);
-                                
-                                const originalHtml = btnTarget.innerHTML;
-                                btnTarget.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                                btnTarget.style.background = 'var(--success)';
-                                
-                                updateHistory(true); // Incrementa o histórico!
-                                
-                                setTimeout(() => {
-                                    btnTarget.innerHTML = originalHtml;
-                                    btnTarget.style.background = '';
-                                }, 2000);
-                            } catch(err) {
-                                showError("Erro ao copiar.");
-                            }
-                        });
-                    });
-                    
-                } catch (e) {
-                    console.error(e);
-                    throw new Error("A IA não retornou um formato JSON válido. Tente novamente.");
-                }
-                
-                // Atualiza a UI
-                loadingContainer.style.display = 'none';
-                document.getElementById('optionsContainer').style.display = 'flex';
-                
-                // Rola suavemente até o grid
-                document.getElementById('mainGrid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Render Checklist
+                const checklistHtml = data.checklist.map(item => `
+                    <div class="checklist-item">
+                        <i class="fa-regular ${item.checked ? 'fa-circle-check icon-check' : 'fa-circle icon-empty'} checklist-icon"></i>
+                        <div>
+                            <div class="checklist-text">${item.text}</div>
+                            <div class="checklist-subtext ${item.checked ? '' : 'muted'}">${item.subtext}</div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('checklistContainer').innerHTML = checklistHtml;
 
-            } catch (error) {
-                showError(`Erro na Geração: ${error.message}`);
-                document.getElementById('mainGrid').style.display = 'none';
-                pasteZone.style.display = 'block';
+                // Render Response with tags
+                let text = data.suggested_response.replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>');
+                text = text.replace(/\\n/g, '<br>');
+                document.getElementById('responseText').innerHTML = text;
+
+                // Salva texto original para o botão copiar
+                window.currentResponseText = data.suggested_response;
+
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('resultsGrid').style.display = 'grid';
+                document.getElementById('statusBadge').style.display = 'flex';
+
+            } catch (err) {
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'block';
+                errorMsg.innerText = err.message;
+                errorMsg.style.display = 'block';
             }
         }
-        
-        // Oculta a chave API na inicialização se já existir uma salva "por baixo dos panos"
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('helpzap_api_key');
-            if (savedKey) {
-                const apiKeyContainer = document.querySelector('.setup-container');
-                if (apiKeyContainer) apiKeyContainer.style.display = 'none';
+
+        document.getElementById('btnCopyResult').addEventListener('click', async (e) => {
+            try {
+                await navigator.clipboard.writeText(window.currentResponseText);
+                const btn = e.currentTarget;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                
+                let historyStr = localStorage.getItem('helpzap_history') || '{}';
+                let history = JSON.parse(historyStr);
+                let today = new Date().toLocaleDateString('pt-BR');
+                history[today] = (history[today] || 0) + 1;
+                localStorage.setItem('helpzap_history', JSON.stringify(history));
+
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            } catch(e) {}
+        });
+
+        // Modal History
+        btnHistory.addEventListener('click', () => {
+            const list = document.getElementById('historyList');
+            let historyStr = localStorage.getItem('helpzap_history') || '{}';
+            let history = JSON.parse(historyStr);
+            let dates = Object.keys(history).sort((a,b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            
+            if (dates.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Nenhum registro ainda.</p>';
+            } else {
+                list.innerHTML = dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${history[d]} tickets</span></div>`).join('');
             }
+            document.getElementById('historyModal').style.display = 'flex';
+        });
+
+        document.getElementById('btnCloseHistory').addEventListener('click', () => {
+            document.getElementById('historyModal').style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('helpzap_api_key')) {
+                const ac = document.getElementById('apiKeyContainer');
+                if(ac) ac.style.display = 'none';
+            }
+            resetUI();
         });
     </script>
 </body>
