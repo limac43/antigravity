@@ -199,21 +199,8 @@
                         </div>
                     </div>
 
-                    <div class="card card-response">
-                        <div class="card-header">
-                            <span class="card-title"><i class="fa-solid fa-list-check"></i> Suggested Response</span>
-                            <div class="response-actions">
-                                <i class="fa-regular fa-thumbs-up"></i>
-                                <i class="fa-regular fa-thumbs-down"></i>
-                                <i class="fa-solid fa-arrow-rotate-right"></i>
-                            </div>
-                        </div>
-                        <div class="card-body response-text" id="responseText">
-                            <!-- Injetado via JS -->
-                        </div>
-                        <div class="card-footer">
-                            <button id="btnCopyResult" class="btn-new-analysis" style="margin: 0; padding: 0.6rem 1.2rem;"><i class="fa-regular fa-copy"></i> Copiar Resposta</button>
-                        </div>
+                    <div id="responsesContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Injetado via JS -->
                     </div>
                 </div>
             </div>
@@ -242,7 +229,11 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
 {
   "scenario": "Nome curto do cenário (ex: Segunda cobrança, Status do Ticket, Portação, etc)",
   "scenario_description": "Breve justificativa em inglês ou português de por que esse cenário foi identificado, ex: 'AI detected a high probability of...'",
-  "suggested_response": "Olá, [Nome] 👋\\n\\n[Corpo da mensagem clara e direta, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
+  "suggested_responses": {
+    "formal": "Olá, [Nome] 👋\\n\\n[Mensagem com tom formal, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
+    "direto": "Olá, [Nome] 👋\\n\\n[Mensagem com tom direto e rápido, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
+    "acolhedor": "Olá, [Nome] 👋\\n\\n[Mensagem com tom empático e acolhedor, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]"
+  },
   "checklist": [
     { "text": "Identificou o cliente?", "subtext": "Ex: Perfil ou ID verificado.", "checked": true },
     { "text": "Conferiu o número do ticket?", "subtext": "Ex: Verificar tickets ativos.", "checked": false },
@@ -359,14 +350,59 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
                 `).join('');
                 document.getElementById('checklistContainer').innerHTML = checklistHtml;
 
-                // Render Response with tags
-                let text = data.suggested_response.replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>');
-                text = text.replace(/\\n/g, '<br>');
-                document.getElementById('responseText').innerHTML = text;
+                // Render Responses
+                const container = document.getElementById('responsesContainer');
+                container.innerHTML = '';
+                
+                const tons = [
+                    { key: 'formal', icon: 'fa-user-tie', label: 'Opção 1: Formal' },
+                    { key: 'direto', icon: 'fa-bolt', label: 'Opção 2: Direto' },
+                    { key: 'acolhedor', icon: 'fa-heart', label: 'Opção 3: Acolhedor' }
+                ];
+                
+                window.responseTexts = {};
+                
+                tons.forEach((tom) => {
+                    const rawText = data.suggested_responses[tom.key] || "";
+                    window.responseTexts[tom.key] = rawText;
+                    
+                    let htmlText = rawText.replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>').replace(/\\n/g, '<br>');
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card card-response';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <span class="card-title"><i class="fa-solid ${tom.icon}"></i> ${tom.label}</span>
+                        </div>
+                        <div class="card-body response-text">
+                            ${htmlText}
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn-new-analysis btn-copy-multi" data-key="${tom.key}" style="margin: 0; padding: 0.6rem 1.2rem;"><i class="fa-regular fa-copy"></i> Copiar ${tom.label}</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                document.querySelectorAll('.btn-copy-multi').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const key = e.currentTarget.getAttribute('data-key');
+                        try {
+                            await navigator.clipboard.writeText(window.responseTexts[key]);
+                            const originalHtml = e.currentTarget.innerHTML;
+                            e.currentTarget.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                            
+                            let historyStr = localStorage.getItem('helpzap_history') || '{}';
+                            let history = JSON.parse(historyStr);
+                            let today = new Date().toLocaleDateString('pt-BR');
+                            history[today] = (history[today] || 0) + 1;
+                            localStorage.setItem('helpzap_history', JSON.stringify(history));
 
-                // Salva texto original para o botão copiar
-                window.currentResponseText = data.suggested_response;
-
+                            setTimeout(() => e.currentTarget.innerHTML = originalHtml, 2000);
+                        } catch(err) {}
+                    });
+                });
+                
                 document.getElementById('loadingContainer').style.display = 'none';
                 document.getElementById('resultsGrid').style.display = 'grid';
                 document.getElementById('statusBadge').style.display = 'flex';
@@ -378,23 +414,6 @@ Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, d
                 errorMsg.style.display = 'block';
             }
         }
-
-        document.getElementById('btnCopyResult').addEventListener('click', async (e) => {
-            try {
-                await navigator.clipboard.writeText(window.currentResponseText);
-                const btn = e.currentTarget;
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                
-                let historyStr = localStorage.getItem('helpzap_history') || '{}';
-                let history = JSON.parse(historyStr);
-                let today = new Date().toLocaleDateString('pt-BR');
-                history[today] = (history[today] || 0) + 1;
-                localStorage.setItem('helpzap_history', JSON.stringify(history));
-
-                setTimeout(() => btn.innerHTML = originalHtml, 2000);
-            } catch(e) {}
-        });
 
         // Modal History
         btnHistory.addEventListener('click', () => {
