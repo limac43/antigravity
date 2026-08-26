@@ -324,6 +324,11 @@
         
         <div class="form-section">
             <div class="form-group">
+                <label class="form-label" for="apiKeyInput"><i class="fa-solid fa-key"></i> Chave da API do Gemini</label>
+                <input type="password" id="apiKeyInput" class="form-input" placeholder="Cole sua API Key do Google AI Studio aqui (ex: AIzaSy...)">
+            </div>
+
+            <div class="form-group">
                 <label class="form-label" for="scenarioSelect"><i class="fa-solid fa-list"></i> Qual é o cenário do atendimento?</label>
                 <select id="scenarioSelect" class="form-select">
                     <option value="" disabled selected>Selecione uma opção...</option>
@@ -380,13 +385,16 @@
         </div>
     </div>
 
-    <script>
-        /* =========================================
-         *  GROQ API — Configuração
-         * ========================================= */
-        const GROQ_MODEL = 'groq/compound';
+    <script type="module">
+        import { GoogleGenAI } from 'https://esm.run/@google/genai';
 
-        const GROQ_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
+        /* =========================================
+         *  GEMINI API — Configuração
+         * ========================================= */
+        const GEMINI_MODEL = 'gemini-3.7-flash';
+        const GEMINI_API_KEY = '';
+
+        const GEMINI_SYSTEM_PROMPT = `Você é um assistente virtual de atendimento ao cliente da ZG Soluções.
 REGRAS OBRIGATÓRIAS DE FORMATAÇÃO:
 Sempre retorne EXATAMENTE 3 mensagens (Formal, Direto, Acolhedor).
 Você DEVE separar as 3 mensagens com a string exata "|||" (três barras verticais).
@@ -554,82 +562,86 @@ NUNCA inclua títulos (ex: "Opção 1:", "Formal:"), introduções ou conclusõe
         };
 
         /* =========================================
-         *  GROQ API — Função de chamada
+         *  GEMINI API — Função de chamada
          * ========================================= */
-        async function callGroqAPI(userPrompt) {
-            const userKey = "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";
+        async function callGeminiAPI(userPrompt) {
+            const apiKeyEl = document.getElementById('apiKeyInput');
+            let userKey = apiKeyEl ? apiKeyEl.value.trim() : '';
+            
+            // Se não foi digitada agora, tenta pegar a chave salva "por baixo dos panos"
             if (!userKey) {
-                throw new Error("Por favor, insira sua chave da API do Groq no topo da tela para usar a IA.");
+                userKey = localStorage.getItem('helpzap_api_key') || '';
+            }
+            
+            const finalApiKey = userKey || GEMINI_API_KEY;
+
+            if (!finalApiKey || finalApiKey === '') {
+                if (apiKeyEl) apiKeyEl.parentElement.style.display = 'block';
+                throw new Error("Por favor, cole sua Chave de API válida no campo correspondente acima.");
             }
 
-            const payload = {
-                model: GROQ_MODEL,
-                messages: [
-                    {
-                        role: "system",
-                        content: GROQ_SYSTEM_PROMPT
-                    },
-                    {
-                        role: "user",
-                        content: userPrompt
+            const ai = new GoogleGenAI({ apiKey: finalApiKey });
+            
+            // Lista padrão de modelos
+            const defaultModels = [
+                'gemini-3.7-flash',
+                'gemini-3.5-flash',
+                'gemini-2.5-flash',
+                'gemini-2.0-flash',
+                'gemini-1.5-pro',
+                'gemini-pro'
+            ];
+            
+            // Prioriza o modelo que funcionou na última vez para zerar o tempo de carga
+            const savedModel = localStorage.getItem('helpzap_successful_model');
+            const modelsToTry = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
+            
+            let lastError;
+
+            for (const model of modelsToTry) {
+                try {
+                    const response = await ai.models.generateContent({
+                        model: model,
+                        contents: GEMINI_SYSTEM_PROMPT + "\n\n---\n\n" + userPrompt,
+                        config: {
+                            temperature: 0.7
+                        }
+                    });
+                    
+                    // Sucesso! Salva a chave e o modelo "por baixo dos panos"
+                    localStorage.setItem('helpzap_successful_model', model);
+                    localStorage.setItem('helpzap_api_key', finalApiKey);
+                    console.log(`Sucesso utilizando o modelo: ${model}`);
+                    
+                    // Esconde o campo da chave de API da interface para o usuário final
+                    if (apiKeyEl) apiKeyEl.parentElement.style.display = 'none';
+                    
+                    return { text: response.text };
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`Tentativa com o modelo ${model} falhou:`, error.message);
+                    
+                    // Se for erro de chave (401, 403), apaga a chave salva e exibe o campo novamente
+                    if (error.message.includes("403") || error.message.includes("401") || error.message.includes("API key not valid")) {
+                        localStorage.removeItem('helpzap_api_key');
+                        if (apiKeyEl) apiKeyEl.parentElement.style.display = 'block';
+                        throw new Error(`Chave de API inválida ou sem permissão. Verifique sua chave.`);
                     }
-                ]
-            };
-
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${userKey}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
-                
-                if (errorData.error) {
-                    errorMessage = typeof errorData.error === 'string' 
-                        ? errorData.error 
-                        : (errorData.error.message || errorMessage);
+                    // Caso contrário (404, 503, etc), o loop continua e tenta o próximo modelo
                 }
-                
-                throw new Error(errorMessage);
             }
 
-            return await response.json();
+            throw new Error(`Todos os modelos estão indisponíveis para sua chave. Último erro: ${lastError.message}`);
         }
 
         /**
-         * Extrai o texto da resposta da API do Grok.
-         * Suporta tanto o formato "output" (Responses API) quanto "choices" (Chat Completions).
+         * Extrai o texto da resposta da API do Gemini.
          */
-        function extractGrokText(data) {
-            // Formato Responses API: data.output contém array de items
-            if (data.output && Array.isArray(data.output)) {
-                for (const item of data.output) {
-                    if (item.type === 'message' && item.content) {
-                        for (const block of item.content) {
-                            if (block.type === 'output_text' && block.text) {
-                                return block.text;
-                            }
-                        }
-                    }
-                }
+        function extractGeminiText(data) {
+            if (data && data.text) {
+                return data.text;
             }
-
-            // Formato Chat Completions: data.choices[0].message.content
-            if (data.choices && data.choices.length > 0) {
-                return data.choices[0].message?.content || '';
-            }
-
-            // Fallback: tenta output_text direto
-            if (data.output_text) {
-                return data.output_text;
-            }
-
-            throw new Error('Formato de resposta do Grok não reconhecido.');
+            throw new Error('Formato de resposta do Gemini não reconhecido ou vazio.');
         }
 
         /**
@@ -726,6 +738,20 @@ NUNCA inclua títulos (ex: "Opção 1:", "Formal:"), introduções ou conclusõe
 
             grokResults.style.display = 'grid';
         }
+
+        /* =========================================
+         *  INICIALIZAÇÃO DO APLICATIVO
+         * ========================================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Oculta a chave API se já existir uma salva "por baixo dos panos"
+            const savedKey = localStorage.getItem('helpzap_api_key');
+            const apiKeyEl = document.getElementById('apiKeyInput');
+            if (savedKey && apiKeyEl) {
+                apiKeyEl.parentElement.style.display = 'none';
+            }
+            
+            populateSelect(areaServicoSelect, Object.keys(AREAS_SERVICO), "Selecione...");
+        });
 
         /* =========================================
          *  EVENT LISTENERS
@@ -893,8 +919,8 @@ Instruções:
             document.getElementById('aiResultsWrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
             try {
-                const grokData = await callGroqAPI(promptExternal);
-                const fullText = extractGrokText(grokData);
+                const grokData = await callGeminiAPI(promptExternal);
+                const fullText = extractGeminiText(grokData);
                 const options = parseGrokOptions(fullText);
 
                 grokLoading.style.display = 'none';
