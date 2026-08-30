@@ -3,460 +3,1158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helpzap AI - Support Command</title>
-    <!-- Modern Typography: Inter -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <title>Helpzap AI - Manual Command v1.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* ─── DARK THEME (default) ─────────────────────────────────────────── */
         :root {
-            --bg-sidebar: #0A101D;
-            --bg-main: #0B1121;
-            --card-bg: #111827;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --primary: #1ed760; /* Neon Green */
-            --primary-hover: #1fdf64;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --success-bg: rgba(30, 215, 96, 0.1);
+            --bg-sidebar:     #0A101D;
+            --bg-main:        #0B1121;
+            --card-bg:        #111827;
+            --card-border:    rgba(255,255,255,0.08);
+            --primary:        #1ed760;
+            --primary-hover:  #1fdf64;
+            --primary-glow:   rgba(30,215,96,0.25);
+            --text-main:      #f8fafc;
+            --text-muted:     #94a3b8;
+            --text-card:      #f8fafc;
+            --danger:         #ef4444;
+            --success-bg:     rgba(30,215,96,0.1);
+            --input-bg:       rgba(255,255,255,0.03);
+            --input-color:    #f8fafc;
+            --select-opt-bg:  #0B1121;
+            --nav-hover-bg:   rgba(255,255,255,0.05);
+            --nav-active-bg:  rgba(255,255,255,0.1);
+            --nav-active-color: white;
+            --resp-header-bg: rgba(255,255,255,0.02);
+            --resp-rec-bg:    rgba(30,215,96,0.05);
+            --resp-footer-bg: rgba(0,0,0,0.15);
+            --resp-text:      #cbd5e1;
+            --loading-overlay-bg: rgba(11,17,33,0.85);
+            --shadow-hover:   0 4px 20px rgba(0,0,0,0.3);
+            --modal-shadow:   0 20px 50px rgba(0,0,0,0.6);
+            --history-bg:     rgba(255,255,255,0.03);
+            --btn-gen-color:  #0A101D;
+            --empty-h3:       white;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ─── LIGHT THEME (ZG Soluções brand) ─────────────────────────────── */
+        html[data-theme="light"] {
+            --bg-sidebar:     #ffffff;
+            --bg-main:        #f0f7ee;
+            --card-bg:        #ffffff;
+            --card-border:    rgba(0,0,0,0.09);
+            --primary:        #3a9e35;
+            --primary-hover:  #2d8429;
+            --primary-glow:   rgba(58,158,53,0.2);
+            --text-main:      #1a2117;
+            --text-muted:     #5a7055;
+            --text-card:      #1a2117;
+            --danger:         #dc2626;
+            --success-bg:     rgba(58,158,53,0.1);
+            --input-bg:       #f7fbf6;
+            --input-color:    #1a2117;
+            --select-opt-bg:  #ffffff;
+            --nav-hover-bg:   rgba(58,158,53,0.07);
+            --nav-active-bg:  rgba(58,158,53,0.12);
+            --nav-active-color: #2d6b29;
+            --resp-header-bg: rgba(0,0,0,0.02);
+            --resp-rec-bg:    rgba(58,158,53,0.06);
+            --resp-footer-bg: rgba(0,0,0,0.03);
+            --resp-text:      #374737;
+            --loading-overlay-bg: rgba(240,247,238,0.88);
+            --shadow-hover:   0 4px 20px rgba(0,0,0,0.12);
+            --modal-shadow:   0 20px 50px rgba(0,0,0,0.18);
+            --history-bg:     rgba(0,0,0,0.03);
+            --btn-gen-color:  #ffffff;
+            --empty-h3:       #1a2117;
+        }
+
+        /* ─── TRANSITION for smooth theme switch ──────────────────────────── */
+        *, *::before, *::after { transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, box-shadow 0.2s ease; box-sizing: border-box; margin: 0; padding: 0; }
+
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
-        
-        /* Dashboard Layout */
+
         .dashboard-layout { display: flex; width: 100%; height: 100%; }
-        
+
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 1.5rem; }
-        .sidebar-brand { font-size: 1.25rem; font-weight: 700; color: white; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 2rem; }
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 1.5rem; flex-shrink: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.05); }
+        .sidebar-brand { font-size: 1.25rem; font-weight: 700; color: var(--text-card); display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 2rem; }
         .sidebar-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .btn-new-analysis { background: var(--primary); color: #0A101D; font-weight: 600; border: none; border-radius: 8px; padding: 0.75rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s; margin-bottom: 2rem; font-family: inherit; }
-        .btn-new-analysis:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,215,96,0.2); }
-        
+
+        .btn-generate { background: var(--primary); color: var(--btn-gen-color); font-weight: 700; border: none; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; margin-bottom: 1rem; font-family: inherit; width: 100%; }
+        .btn-generate:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 14px var(--primary-glow); }
+        .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* Theme toggle button */
+        .btn-theme-toggle { display: flex; align-items: center; gap: 0.6rem; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 1rem; justify-content: center; }
+        .btn-theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-theme-toggle .toggle-track { width: 32px; height: 18px; background: var(--card-border); border-radius: 999px; position: relative; border: 1px solid var(--card-border); margin-left: auto; }
+        .btn-theme-toggle .toggle-knob { width: 12px; height: 12px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s, background 0.2s; }
+        html[data-theme="light"] .toggle-knob { transform: translateX(14px); background: var(--primary); }
+
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s; font-size: 0.95rem; }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
-        .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item { color: var(--text-muted); text-decoration: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+        .nav-item:hover { color: var(--text-card); background: var(--nav-hover-bg); }
+        .nav-item.active { background: var(--nav-active-bg); color: var(--nav-active-color); }
         .nav-item i { font-size: 1.1rem; width: 20px; }
-        
+
         .sidebar-footer { border-top: 1px solid var(--card-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-        
+        .sidebar-version { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem; opacity: 0.6; }
+
         /* Main Content */
         .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
         .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
         .top-header h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.25rem; }
         .top-header .subtitle { color: var(--text-muted); font-size: 1rem; }
-        .status-badge { background: var(--success-bg); color: var(--primary); border: 1px solid var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
-        
+
         /* Grid Layout */
-        .results-grid { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; animation: fadeIn 0.4s ease; }
-        .col-left { display: flex; flex-direction: column; gap: 1.5rem; }
-        .col-right { display: flex; flex-direction: column; gap: 1.5rem; }
-        
+        .results-grid { display: grid; grid-template-columns: 420px 1fr; gap: 2rem; height: calc(100vh - 130px); }
+        .col-left { display: flex; flex-direction: column; overflow-y: auto; }
+        .col-right { display: flex; flex-direction: column; position: relative; }
+
         /* Cards */
         .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; }
         .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
-        .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
-        .card-body { padding: 1.25rem; }
-        
-        /* Specific Cards */
-        .card-screenshot { background: transparent; }
-        .card-screenshot .card-body { padding: 0; background: #080D1A; display: flex; justify-content: center; align-items: center; min-height: 200px;}
-        .card-screenshot img { max-width: 100%; height: auto; display: block; border-radius: 0 0 12px 12px; opacity: 0.8; }
-        
-        .card-checklist .card-header { border-bottom: none; padding-bottom: 0.5rem; }
-        .checklist-item { display: flex; gap: 1rem; align-items: flex-start; margin-top: 1rem; }
-        .checklist-icon { font-size: 1.2rem; margin-top: 2px; }
-        .icon-check { color: var(--primary); }
-        .icon-empty { color: var(--text-muted); }
-        .checklist-text { font-weight: 500; font-size: 0.95rem; }
-        .checklist-subtext { font-size: 0.85rem; color: var(--primary); margin-top: 0.15rem; }
-        .checklist-subtext.muted { color: var(--text-muted); }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-card); display: flex; align-items: center; gap: 0.5rem; }
+        .card-body { padding: 1.5rem; }
 
-        .card-scenario { display: flex; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; border: 1px solid var(--primary); border-radius: 12px; background: rgba(30, 215, 96, 0.03); }
-        .scenario-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--success-bg); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 1.25rem; flex-shrink: 0; }
-        .scenario-label { color: var(--primary); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
-        .scenario-content h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .scenario-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        /* Form */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .form-input, .form-select { width: 100%; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--input-color); border-radius: 8px; padding: 0.75rem 1rem; font-family: inherit; font-size: 0.95rem; outline: none; }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); background: var(--resp-rec-bg); }
+        .form-select option { background: var(--select-opt-bg); color: var(--input-color); }
+        .form-select:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .card-response { flex: 1; display: flex; flex-direction: column; }
-        .response-actions { display: flex; gap: 1rem; color: var(--text-muted); }
-        .response-actions i { cursor: pointer; transition: 0.2s; }
-        .response-actions i:hover { color: white; }
-        
-        .response-text { font-size: 1.05rem; line-height: 1.7; color: #e2e8f0; flex: 1; white-space: pre-wrap; padding: 1.5rem; }
+        /* Response Cards */
+        .responses-wrapper { display: flex; flex-direction: column; gap: 1rem; height: 100%; }
+        .responses-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; }
+        .responses-header h3 { font-size: 1.1rem; font-weight: 600; }
+        .btn-back { background: none; border: 1px solid var(--card-border); color: var(--text-muted); padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+        .btn-back:hover { border-color: var(--primary); color: var(--primary); }
+
+        .response-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; flex: 1; }
+        @media (max-width: 1100px) { .response-cards-grid { grid-template-columns: 1fr; overflow-y: auto; } }
+
+        .card-response { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+        .card-response:hover { box-shadow: var(--shadow-hover); }
+        .card-response.recommended { border-color: var(--primary); }
+        .card-response .card-header { background: var(--resp-header-bg); }
+        .card-response.recommended .card-header { background: var(--resp-rec-bg); }
+        .badge-recommend { font-size: 0.65rem; background: var(--primary); color: var(--btn-gen-color); padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.5px; }
+        .response-text { font-size: 0.9rem; line-height: 1.65; color: var(--resp-text); flex: 1; padding: 1.25rem; overflow-y: auto; max-height: 280px; }
         .tag-green { background: var(--success-bg); color: var(--primary); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
-        
-        .card-response .card-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--card-border); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.1); }
-        
-        /* Upload Area */
-        .upload-area { max-width: 600px; margin: 4rem auto; }
-        .setup-container { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1rem 1.5rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-        .setup-container input { flex: 1; background: transparent; border: none; color: white; outline: none; font-family: inherit; }
-        .paste-zone { border: 2px dashed var(--primary); border-radius: 12px; padding: 4rem 2rem; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(30, 215, 96, 0.05); }
-        .paste-zone:hover { background: rgba(30, 215, 96, 0.1); }
-        .paste-icon { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
-        .paste-text { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
-        
-        .loading-container { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; grid-column: 1 / -1; }
-        .spinner { width: 40px; height: 40px; border: 3px solid rgba(30, 215, 96, 0.3); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; margin-bottom: 1rem; }
-        
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; width: 400px; padding: 1.5rem; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1rem; }
-        .history-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-response .resp-footer { padding: 0.75rem 1rem; border-top: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 0.5rem; background: var(--resp-footer-bg); }
+        .resp-footer-actions { display: flex; gap: 0.5rem; }
+        .btn-copy { background: var(--primary); color: var(--btn-gen-color); border: none; border-radius: 6px; padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; flex: 1; transition: background 0.2s; }
+        .btn-copy:hover { background: var(--primary-hover); }
+        .btn-copy.copied { background: #22c55e; }
+        .btn-icon { background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 6px; padding: 0.45rem; cursor: pointer; transition: all 0.2s; }
+        .btn-icon:hover { color: var(--primary); border-color: var(--primary); }
+        .btn-icon.liked { color: var(--primary); background: var(--resp-rec-bg); border-color: var(--primary); }
+        .btn-secondary { background: transparent; border: 1px solid var(--card-border); color: var(--text-card); border-radius: 6px; padding: 0.45rem 0.9rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-secondary:hover { background: var(--input-bg); border-color: var(--text-muted); }
+        .badge-accuracy { font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; margin-top: 0.25rem; }
+        .badge-accuracy i { color: var(--primary); }
+
+        /* Empty / Loading state */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; gap: 1rem; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card-bg); }
+        .empty-state i { font-size: 3rem; opacity: 0.4; }
+        .empty-state h3 { color: var(--empty-h3); margin-bottom: 0.25rem; }
+
+        .loading-overlay { position: absolute; inset: 0; background: var(--loading-overlay-bg); backdrop-filter: blur(4px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: 12px; }
+        .spinner { width: 42px; height: 42px; border: 3px solid rgba(30,215,96,0.2); border-radius: 50%; border-top-color: var(--primary); animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Error banner */
+        .error-banner { display: none; background: rgba(239,68,68,0.1); border: 1px solid var(--danger); padding: 0.9rem 1.25rem; border-radius: 8px; color: var(--danger); margin-bottom: 1rem; font-size: 0.9rem; }
+
+        /* API Key Modal special styles */
+        .apikey-modal-icon { width: 56px; height: 56px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #f87171; margin: 0 auto 1rem; }
+        .apikey-modal-icon.success { background: var(--success-bg); border-color: var(--primary); color: var(--primary); }
+        .apikey-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+        .apikey-hint a { color: var(--primary); text-decoration: none; }
+        .apikey-hint a:hover { text-decoration: underline; }
+        .btn-apikey-save { width: 100%; background: var(--primary); color: var(--btn-gen-color); border: none; border-radius: 8px; padding: 0.8rem 1rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 1rem; }
+        .btn-apikey-save:hover { background: var(--primary-hover); }
+        .btn-apikey-save:disabled { opacity: 0.4; cursor: not-allowed; }
+        .apikey-error-tag { font-size: 0.8rem; color: #f87171; margin-top: 0.4rem; display: none; }
+
+        /* API Status Pill Button (sidebar) */
+        .btn-api-status { display: flex; align-items: center; gap: 0.6rem; border-radius: 8px; padding: 0.55rem 1rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 0.5rem; border: 1.5px solid; text-align: left; }
+        .btn-api-status.st-unknown { background: var(--input-bg); border-color: var(--card-border); color: var(--text-muted); }
+        .btn-api-status.st-testing { background: rgba(234,179,8,0.08); border-color: #ca8a04; color: #ca8a04; }
+        .btn-api-status.st-ok      { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #22c55e; }
+        .btn-api-status.st-error   { background: rgba(239,68,68,0.08); border-color: var(--danger); color: var(--danger); }
+        .btn-api-status .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: currentColor; }
+        .btn-api-status.st-ok .status-dot { animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .btn-api-status .status-label { flex: 1; }
+        .btn-api-status .status-edit { font-size: 0.75rem; opacity: 0.7; margin-left: auto; }
+
+        /* API Key Modal: test result row */
+        .test-result { display: none; margin-top: 0.75rem; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; align-items: center; gap: 0.5rem; }
+        .test-result.ok    { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid #22c55e; }
+        .test-result.error { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid #f87171; }
+        .test-result.testing { background: rgba(234,179,8,0.08); color: #ca8a04; border: 1px solid #ca8a04; }
+        .btn-test-key { width: 100%; background: none; border: 1.5px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 0.65rem 1rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 0.75rem; }
+        .btn-test-key:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 1.5rem; width: 90%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--modal-shadow); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1rem; }
+        .modal-title { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-card); }
+        .btn-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
+        .btn-close:hover { color: var(--danger); }
+        .history-item { background: var(--history-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .history-date { font-weight: 600; color: var(--text-card); }
+        .history-count { background: var(--success-bg); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 700; }
+        .docs-body { overflow-y: auto; flex: 1; }
+        .docs-body h3 { color: var(--primary); margin: 1.25rem 0 0.5rem; font-size: 0.95rem; }
+        .docs-body p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 0.5rem; }
+        .docs-body hr { border: none; border-top: 1px solid var(--card-border); margin: 1.5rem 0; }
     </style>
 </head>
 <body>
     <div class="dashboard-layout">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Helpzap AI</div>
-                <span class="sidebar-subtitle">Support Command</span>
+                <span class="sidebar-subtitle">Manual Command</span>
             </div>
-            <button class="btn-new-analysis" onclick="resetUI()"><i class="fa-solid fa-plus"></i> New Analysis</button>
+
+            <button class="btn-generate" id="btnGenerate" disabled>
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Resposta
+            </button>
+
+            <!-- Theme Toggle -->
+            <button class="btn-theme-toggle" id="btnThemeToggle">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+                <span id="themeLabel">Modo Claro</span>
+                <div class="toggle-track"><div class="toggle-knob"></div></div>
+            </button>
+
+            <!-- API Key Status Button -->
+            <button class="btn-api-status st-unknown" id="btnApiStatus">
+                <span class="status-dot"></span>
+                <span class="status-label" id="apiStatusLabel">API Key</span>
+                <span class="status-edit"><i class="fa-solid fa-pen-to-square"></i></span>
+            </button>
+
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-                <a href="#" class="nav-item" id="btnHistory"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
-                <a href="#" class="nav-item"><i class="fa-regular fa-lightbulb"></i> Insights</a>
-                <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                <button class="nav-item" id="btnHistorySidebar"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
+                <button class="nav-item" id="btnInsightsSidebar"><i class="fa-regular fa-lightbulb"></i> Insights</button>
             </nav>
+
             <div class="sidebar-footer">
-                <a href="#" class="nav-item"><i class="fa-regular fa-circle-question"></i> Help</a>
-                <a href="#" class="nav-item"><i class="fa-regular fa-comment"></i> Feedback</a>
+                <button class="nav-item" id="btnDocsSidebar"><i class="fa-solid fa-book"></i> Docs</button>
+                <div class="sidebar-version">Support Command v1.1</div>
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <div class="top-header">
                 <div>
-                    <h2>Analysis Results</h2>
-                    <p class="subtitle" id="analysisSubtitle">Awaiting image upload...</p>
+                    <h2>Support Command</h2>
+                    <p class="subtitle">Geração manual de respostas contextuais</p>
                 </div>
-                <div class="status-badge" id="statusBadge">
-                    <i class="fa-regular fa-circle-check"></i> Analysis Complete
-                </div>
-            </div>
-            
-            <div id="errorMsg" style="display:none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 8px; color: #fca5a5; margin-bottom: 1rem; text-align: center;"></div>
-
-            <!-- Upload Area -->
-            <div id="uploadArea" class="upload-area">
-                <div class="setup-container" id="apiKeyContainer">
-                    <i class="fa-solid fa-key text-muted"></i>
-                    <input type="password" id="apiKeyInput" placeholder="API Key do Gemini..." autocomplete="off">
-                </div>
-                <div class="paste-zone" id="pasteZone" tabindex="0">
-                    <i class="fa-regular fa-image paste-icon"></i>
-                    <div class="paste-text">Pressione Ctrl+V para colar a imagem</div>
-                    <div class="checklist-subtext muted">A imagem será analisada magicamente pela IA.</div>
-                </div>
-            </div>
-            
-            <div class="loading-container" id="loadingContainer">
-                <div class="spinner"></div>
-                <div style="color: var(--primary); font-weight: 500;">Analisando cenário...</div>
             </div>
 
-            <!-- Results Grid -->
-            <div id="resultsGrid" class="results-grid">
+            <div id="errorMsg" class="error-banner"></div>
+
+            <div class="results-grid">
+                <!-- Left: Form -->
                 <div class="col-left">
-                    <div class="card card-screenshot">
+                    <div class="card">
                         <div class="card-header">
-                            <span class="card-title">Source Screenshot</span>
-                            <i class="fa-regular fa-image" style="color: var(--text-muted);"></i>
+                            <span class="card-title"><i class="fa-solid fa-sliders"></i> Contexto do Chamado</span>
                         </div>
                         <div class="card-body">
-                            <img id="imagePreview" src="" alt="Screenshot">
-                        </div>
-                    </div>
+                            <div class="form-group" id="apiKeyContainer">
+                                <label class="form-label"><i class="fa-solid fa-key"></i> Chave da API</label>
+                                <input type="password" id="apiKeyInput" class="form-input" placeholder="Cole sua API Key do Gemini..." autocomplete="off">
+                            </div>
 
-                    <div class="card card-checklist">
-                        <div class="card-header">
-                            <i class="fa-regular fa-square-check" style="color: var(--primary); font-size: 1.5rem; margin-right: 0.5rem;"></i>
-                            <span class="card-title" style="font-size: 1.25rem; color: white;">Checklist de 30 Segundos</span>
-                        </div>
-                        <div class="card-body" id="checklistContainer">
-                            <!-- Injetado via JS -->
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa-solid fa-list"></i> Cenário</label>
+                                <select id="scenarioSelect" class="form-select">
+                                    <option value="" disabled selected>Selecione um cenário...</option>
+                                    <option value="1">Chamado(s) priorizado(s)</option>
+                                    <option value="2">Chamado em atendimento</option>
+                                    <option value="3">Segunda cobrança</option>
+                                    <option value="4">Zerinho finalizou, cliente discorda</option>
+                                    <option value="5">Relato sem ticket aberto</option>
+                                    <option value="6">Cliente recusa abrir ticket</option>
+                                    <option value="7">Info nova em ticket aberto (Mensagem Interna)</option>
+                                    <option value="8">Solicitação de contato telefônico</option>
+                                    <option value="9">Instabilidade sistêmica (Incidente)</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label"><i class="fa-solid fa-building"></i> Área</label>
+                                    <select id="areaServico" class="form-select">
+                                        <option value="" disabled selected>Selecione...</option>
+                                        <option value="Operadoras">Operadoras</option>
+                                        <option value="Núcleos">Núcleos</option>
+                                        <option value="A confirmar">A confirmar</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label"><i class="fa-solid fa-briefcase"></i> Serviço</label>
+                                    <select id="servicoEspecifico" class="form-select" disabled>
+                                        <option value="">Selecione a área...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="dynamicFields"></div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Right: Result -->
                 <div class="col-right">
-                    <div class="card-scenario">
-                        <div class="scenario-icon"><i class="fa-solid fa-arrows-spin"></i></div>
-                        <div class="scenario-content">
-                            <div class="scenario-label">CENÁRIO IDENTIFICADO</div>
-                            <h3 id="scenarioTitle">Analisando...</h3>
-                            <p id="scenarioDesc">...</p>
-                        </div>
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                        <div style="color: var(--primary); font-weight: 500;">Gerando resposta perfeita...</div>
                     </div>
 
-                    <div id="responsesContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <!-- Injetado via JS -->
+                    <!-- resultContent movido para modal -->
+
+                    <div id="emptyState" class="dashboard-metrics" style="display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-card);"><i class="fa-solid fa-chart-pie" style="color: var(--primary); margin-right: 0.5rem;"></i> Visão Geral de Produtividade</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--history-bg); padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--card-border);">Atualizado em tempo real</span>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div class="card" style="padding: 1.25rem;" title="Quantidade de respostas geradas pela IA no dia de hoje.">
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Respostas (Hoje)</div>
+                                <div id="dashToday" style="font-size: 1.8rem; font-weight: 700; color: var(--primary);">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><i class="fa-solid fa-clock"></i> Atualizado agora</div>
+                            </div>
+                            <div class="card" style="padding: 1.25rem;" title="Número histórico de todas as respostas já geradas por você na ferramenta.">
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total de Respostas</div>
+                                <div id="dashTotal" style="font-size: 1.8rem; font-weight: 700; color: var(--text-card);">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><i class="fa-solid fa-chart-line"></i> Histórico completo</div>
+                            </div>
+                            <div class="card" style="padding: 1.25rem;" title="Estimativa de tempo total poupado, assumindo uma média de 5 minutos por ticket.">
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Tempo Economizado</div>
+                                <div id="dashTime" style="font-size: 1.8rem; font-weight: 700; color: var(--text-card);">0m</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><i class="fa-solid fa-bolt" style="color: #ca8a04;"></i> ~5min por ticket</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; padding-bottom: 1rem;">
+                            <div class="card" style="display: flex; flex-direction: column;">
+                                <div class="card-header" style="border-bottom: none; padding-bottom: 0.5rem;">
+                                    <span class="card-title">Por Área e Serviço</span>
+                                </div>
+                                <div class="card-body" style="padding-top: 0; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--history-bg); border-radius: 8px; border: 1px solid var(--card-border);">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-card);">Operadoras</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Atualização de crédito</div>
+                                        </div>
+                                        <div style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">45</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--history-bg); border-radius: 8px; border: 1px solid var(--card-border);">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-card);">Operadoras</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Envio de Recurso</div>
+                                        </div>
+                                        <div style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">32</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--history-bg); border-radius: 8px; border: 1px solid var(--card-border);">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-card);">Núcleos</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Atualização de faturados</div>
+                                        </div>
+                                        <div style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">28</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--history-bg); border-radius: 8px; border: 1px solid var(--card-border);">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-card);">Núcleos</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Conciliação</div>
+                                        </div>
+                                        <div style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">19</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="display: flex; flex-direction: column;">
+                                <div class="card-header" style="border-bottom: none; padding-bottom: 0.5rem;">
+                                    <span class="card-title">Por Operadora (Contexto)</span>
+                                </div>
+                                <div class="card-body" style="padding-top: 0; flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span style="color: var(--text-card); font-weight: 500;">Unimed</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">38%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: 38%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span style="color: var(--text-card); font-weight: 500;">Amil</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">24%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: 24%; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span style="color: var(--text-card); font-weight: 500;">Bradesco Saúde</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">18%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: 18%; height: 100%; background: #f59e0b; border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span style="color: var(--text-card); font-weight: 500;">SulAmérica</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">12%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: 12%; height: 100%; background: #8b5cf6; border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span style="color: var(--text-card); font-weight: 500;">Outras</span>
+                                            <span style="color: var(--text-muted); font-weight: 600;">8%</span>
+                                        </div>
+                                        <div style="width: 100%; height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: 8%; height: 100%; background: var(--text-muted); border-radius: 4px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="historyModal" onclick="if(event.target === this) this.style.display = 'none'">
-        <div class="modal-content">
+    <!-- Modal: API Key -->
+    <div class="modal-overlay" id="apiKeyModal">
+        <div class="modal-content" style="max-width: 460px;">
             <div class="modal-header">
-                <h3 style="color: white;"><i class="fa-solid fa-clock-rotate-left"></i> History</h3>
-                <button id="btnCloseHistory" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <div class="modal-title"><i class="fa-solid fa-key"></i> Configurar API Key do Gemini</div>
+                <button class="btn-close" id="btnCancelApiKey"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="historyList"></div>
+
+            <!-- Status row inside modal -->
+            <div id="modalApiStatusRow" style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-radius:8px; margin-bottom:1rem; background:var(--history-bg); border:1px solid var(--card-border);">
+                <span id="modalStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
+                <span id="modalStatusText" style="font-size:0.85rem;color:var(--text-muted);">Nenhuma chave configurada</span>
+                <span id="modalStatusModel" style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-key"></i> Nova API Key</label>
+                <input type="password" id="modalApiKeyInput" class="form-input" placeholder="Cole aqui sua Gemini API Key..." autocomplete="off">
+                <div id="apikeyErrorTag" class="apikey-error-tag"><i class="fa-solid fa-circle-exclamation"></i> <span id="apikeyErrorText"></span></div>
+                <div class="apikey-hint">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Obtenha sua chave gratuita em
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i></a>
+                </div>
+            </div>
+
+            <div id="testResult" class="test-result"></div>
+
+            <button class="btn-test-key" id="btnTestKey" disabled>
+                <i class="fa-solid fa-plug-circle-check"></i> Testar conexão
+            </button>
+
+            <button class="btn-apikey-save" id="btnSaveApiKey" disabled>
+                <i class="fa-solid fa-floppy-disk"></i> Salvar e validar
+            </button>
         </div>
     </div>
 
-
-    <!-- Modal Respostas 3 Opções -->
-    <div class="modal-overlay" id="responsesModal" onclick="if(event.target === this) this.style.display = 'none'">
-        <div class="modal-content" style="max-width: 1200px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <!-- Modal: History -->
+    <div class="modal-overlay" id="historyModal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 420px;">
             <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas</div>
-                <button class="btn-close-sidebar" onclick="document.getElementById('responsesModal').style.display = 'none'"><i class="fa-solid fa-xmark"></i></button>
+                <div class="modal-title"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Produtividade</div>
+                <button class="btn-close" id="btnCloseHistory"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="responsesModalContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; overflow-y: auto; padding-top: 1rem;">
-                <!-- Via JS -->
+            <div id="historyList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 350px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Insights -->
+    <div class="modal-overlay" id="insightsModal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-regular fa-lightbulb"></i> Insights de Atendimento</div>
+                <button class="btn-close" id="btnCloseInsights"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            <div class="docs-body" style="padding-right: 0.5rem;">
+                <h3 style="margin-top: 0;">🎯 Princípio Ouro</h3>
+                <p><strong>Antes de direcionar, INVESTIGUE.</strong> O WhatsApp é uma ferramenta de apoio/relacionamento. O cliente veio até aqui porque precisa de empatia e atenção ágil.</p>
+
+                <hr>
+
+                <h3>🛑 Os 3 Erros Fatais (O que NÃO fazer)</h3>
+                <ul style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-left: 1.5rem; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><strong>Jogar para o ticket sem checar:</strong> Nunca diga "abre um ticket" sem antes entender a dúvida. Se for um caso simples ou algo que já foi resolvido errado antes, você vai irritar o cliente.</li>
+                    <li><strong>Pedir informação que o sistema já tem:</strong> Se ele te mandar um print, tente repetir o cenário, realize uma breve busca no sistema para se inteirar a respeito e simular o problema.</li>
+                    <li><strong>Respostas em bloco (Copiar e Colar seco):</strong> Mensagens longas e genéricas parecem disparos automáticos.</li>
+                </ul>
+
+                <hr>
+
+                <h3>🔍 Checklist de Triagem (Bata o olho antes de responder!)</h3>
+                <p>Quando o cliente chamar com um problema, siga estes 3 passos rápidos:</p>
+                <div style="background: var(--history-bg); border: 1px solid var(--card-border); padding: 0.75rem; border-radius: 8px; text-align: center; font-weight: 600; color: var(--primary); margin-bottom: 1.25rem;">
+                    [1. Ouvir/Acolher] ➔ [2. Pré-validar no sistema] ➔ [3. Conduzir com Clareza]
+                </div>
+
+                <h4 style="color: var(--text-card); margin-bottom: 0.3rem;">Passo 1: Entenda o cenário</h4>
+                <p style="margin-bottom: 1rem;">O cliente está reclamando de algo novo ou é um ticket que deu errado/foi encerrado antes?<br>Ele parece irritado ou com um sistema parado?</p>
+
+                <h4 style="color: var(--text-card); margin-bottom: 0.3rem;">Passo 2: Faça uma checagem rápida de 30 segundos</h4>
+                <p style="margin-bottom: 1rem;">O ticket realmente precisa ser aberto? Seria algo recorrente?<br>O ticket antigo foi finalizado sem resolver? Não mande ele reabrir sozinho. Peça licença e reabra/oriente que na próxima ele pode reabrir, já pegue um print da insatisfação dele e acrescente no ticket como mensagem interna e avise o enxame logo em seguida.</p>
+
+                <h4 style="color: var(--text-card); margin-bottom: 0.3rem;">Passo 3: Se for pedir evidência ou abertura de ticket</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Peça evidências objetivas:</strong> "Me manda o print da tela inteira ou me informe alguns exemplos se possível do protocolo faltante, data de pagamento e etc"</p>
+                <p><strong>Explique o porquê do ticket de forma amigável:</strong> "Para o nosso time técnico conseguir investigar de forma assertiva, preciso registrar isso formalmente. Você já tem o número do ticket? Se sim, pode me passar por gentileza que já solicito prioridade no cenário?"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Docs -->
+    <div class="modal-overlay" id="docsModal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-book"></i> Documentação ZG</div>
+                <button class="btn-close" id="btnCloseDocsModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="docs-body">
+                <h3>Chamados priorizados</h3>
+                <p>1° Informamos que a sua solicitação já passou pela nossa triagem inicial:</p>
+                <p>🎟️ Validação do Ticket: O chamado *n°ticket* foi devidamente validado e priorizado em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
+                <p>2° Gostaríamos de informar que o seu atendimento recebeu um direcionamento especial pela nossa equipe:</p>
+                <p>⚡ Priorização: O chamado *n°ticket* foi devidamente priorizado em nossa fila de atendimento.<br>🕵️ Atribuição: O analista responsável pela demanda já foi notificado sobre a urgência do chamado.</p>
+                <hr>
+                <h3>Quando o chamado se encontra "Em Atendimento"</h3>
+                <p>3° Passando para te avisar que o chamado *n°ticket* já se encontra em atendimento! 👩‍💻</p>
+                <p>🚀 O analista responsável já está analisando o seu caso e logo mais trará um posicionamento direto no ticket.</p>
+                <hr>
+                <h3>Quando o cliente realiza uma segunda cobrança</h3>
+                <p>4° Já informamos ao analista responsável que você precisa de um retorno urgente. Ele já está ciente e, em breve, vai te responder diretamente no ticket com todas as validações concluídas.</p>
+                <hr>
+                <h3>Quando o Zerinho finalizou o ticket</h3>
+                <p>5° Verificamos que o zerinho finalizou o chamado e caso você não esteja de acordo ou a sua dúvida ainda não tenha sido totalmente resolvida, é só realizar a reabertura do ticket que a nossa equipe assume a solicitação para fazer todas as validações necessárias.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Responses -->
+    <div class="modal-overlay" id="responseModal" onclick="if(event.target===this)this.style.display='none'" style="z-index: 200;">
+        <div class="modal-content" style="max-width: 1050px; width: 95%;">
+            <div class="modal-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0.5rem;">
+                <div class="modal-title" id="responseModalTitle"><i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas</div>
+                <button class="btn-close" id="btnCloseResponseModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="resultContent" style="display: none; animation: fadeIn 0.4s ease; flex-direction: column; justify-content: center; padding-top: 1rem;"></div>
         </div>
     </div>
 
     <script type="module">
-        import { GoogleGenAI } from 'https://esm.run/@google/genai';
+        import { GoogleGenAI } from 'https://esm.sh/@google/genai@latest';
 
-        const HARDCODED_API_KEY = ""; 
+        // ── Data ──────────────────────────────────────────────────────────────
+        const AREAS_SERVICO = {
+            "Operadoras": ["Atualização de crédito", "Envio de Recurso", "Acesso ao ZG", "Gestão de Recebimentos"],
+            "Núcleos":    ["Atualização de faturados", "Problema com recurso de glosa", "Problemas de quitação", "Conciliação", "Problema com Relatórios"]
+        };
+
+        const phraseDatabase = {
+            "1": "Olá {nome}! Passando para informar que sua solicitação {ticketId} sobre {context} já passou pela nossa triagem e foi priorizada. Nossa equipe já está acompanhando.",
+            "2": "Olá {nome}! O seu chamado {ticketId} já está em atendimento para {context}. A equipe técnica está focada na análise e logo trará um posicionamento.",
+            "3": "Compreendo perfeitamente a urgência, {nome}. Já acionei o analista responsável e pedi prioridade total no retorno do ticket {ticketId} sobre {context}.",
+            "4": "Olá {nome}! O chamado {ticketId} foi fechado pelo Zerinho, mas se a dúvida não foi resolvida para {context}, basta reabrir o ticket que nós assumiremos por aqui.",
+            "5": "Olá, {nome}! Antes de abrirmos um chamado sobre {context}, preciso confirmar: qual painel exatamente você está usando? Poderia me enviar um print?",
+            "6": "{nome}, para facilitar e poupar o seu tempo, já realizei a abertura do chamado em seu nome (nº {ticketId}) para {context}. A equipe técnica dará continuidade.",
+            "7": "Olá, equipe. Complementei o ticket {ticketId} com informações recebidas via WhatsApp sobre {context}. Por favor, verifiquem as mensagens internas.",
+            "8": "Olá {nome}! Nosso analista precisa fazer um contato telefônico referente ao ticket {ticketId} sobre {context} com {nomeContato}. Poderiam disponibilizar um número para contato?",
+            "9": "Olá {nome}! Nossa equipe técnica identificou uma instabilidade relacionada a {context} e já iniciou as tratativas de correção. Retornaremos no ticket {ticketId} em breve."
+        };
+
+        const scenarioTextMap = {
+            "1": "Chamado(s) priorizado(s)", "2": "Chamado em atendimento", "3": "Segunda cobrança",
+            "4": "Zerinho finalizou", "5": "Relato sem ticket aberto", "6": "Cliente recusa abrir ticket",
+            "7": "Mensagem Interna", "8": "Solicitação de contato telefônico", "9": "Instabilidade sistêmica"
+        };
+
+        const scenarioFieldsMap = {
+            "1": ["ticketId","nomeCliente","context"], "2": ["ticketId","nomeCliente","context"],
+            "3": ["ticketId","nomeCliente","context"], "4": ["ticketId","nomeCliente","context"],
+            "5": ["nomeCliente","context"],            "6": ["ticketId","nomeCliente","context"],
+            "7": ["ticketId","context"],               "8": ["ticketId","nomeContato","context"],
+            "9": ["nomeCliente","ticketId","context"]
+        };
+
+        const fieldsHtml = {
+            "ticketId":    `<div class="form-group"><label class="form-label">Ticket ID</label><input type="text" id="ticketId" class="form-input required-field" placeholder="Ex: 613448"></div>`,
+            "nomeCliente": `<div class="form-group"><label class="form-label">Nome do Cliente</label><input type="text" id="nomeCliente" class="form-input required-field" placeholder="Ex: Carlos"></div>`,
+            "nomeContato": `<div class="form-group"><label class="form-label">Nome do Contato</label><input type="text" id="nomeContato" class="form-input required-field" placeholder="Ex: Suporte de TI"></div>`,
+            "context":     `<div class="form-group"><label class="form-label">Contexto (Opcional)</label><input type="text" id="context" class="form-input" placeholder="Ex: lentidão na tela principal"></div>`
+        };
+
         const SYSTEM_PROMPT = `Você é um analista sênior de suporte da ZG Soluções.
-Analise a imagem da conversa de WhatsApp e crie a melhor resposta padronizada, direta e clara.
+Baseado no texto base abaixo, reescreva a mensagem de forma premium, humanizada e natural em TRÊS tons diferentes.
+Mantenha as tags literais como [Nome] e [Ticket] na saída caso o texto base use placeholders.
 
-**OBRIGATÓRIO: Retorne APENAS um objeto JSON válido** no seguinte formato exato (sem \`\`\`json ou texto adicional):
+O OBRIGATÓRIO: Retorne APENAS um objeto JSON válido com este formato exato (sem markdown, sem explicações):
 {
-  "scenario": "Nome curto do cenário (ex: Segunda cobrança, Status do Ticket, Portação, etc)",
-  "scenario_description": "Breve justificativa em inglês ou português de por que esse cenário foi identificado, ex: 'AI detected a high probability of...'",
   "suggested_responses": {
-    "formal": "Olá, [Nome] 👋\\n\\n[Mensagem com tom formal, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
-    "direto": "Olá, [Nome] 👋\\n\\n[Mensagem com tom direto e rápido, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]",
-    "acolhedor": "Olá, [Nome] 👋\\n\\n[Mensagem com tom empático e acolhedor, citando o ticket [Ticket] se houver]\\n\\n[Mensagem Final Obrigatória]"
-  },
-  "checklist": [
-    { "text": "Identificou o cliente?", "subtext": "Ex: Perfil ou ID verificado.", "checked": true },
-    { "text": "Conferiu o número do ticket?", "subtext": "Ex: Verificar tickets ativos.", "checked": false },
-    { "text": "Tom de voz ZG aplicado?", "subtext": "Claro, direto e cordial.", "checked": true }
-  ]
+    "formal": { "texto": "mensagem formal", "probabilidade": 95 },
+    "direto": { "texto": "mensagem direta", "probabilidade": 88 },
+    "acolhedor": { "texto": "mensagem acolhedora", "probabilidade": 92 }
+  }
 }
+Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível de precisão/adequação sugerido.`;
 
-**Regras estritas para a Resposta:**
-- Seja o mais conciso possível. Textos longos são proibidos.
-- Se o cenário for sobre solicitação de contato telefônico, a resposta DEVE informar ao cliente que não identificamos nenhum telefone em nossa base de dados e pedir que ele disponibilize um número atualizado.
-- NUNCA invente informações. 
-- PROIBIDO dizer "já está analisando" ou "está verificando". Sempre use o tempo futuro: "em breve irá analisar" ou "iniciará a tratativa".
-- Não peça número de protocolo se o cliente já enviou.
-- Mensagem final obrigatória da response: "A equipe técnica já vai iniciar a tratativa e, assim que tivermos novidades, te damos um retorno diretamente pelo próprio chamado!"
-- Utilize a notação exata [Nome] e [Ticket] no texto (isso será estilizado pelo frontend).`;
+        // ── DOM refs ──────────────────────────────────────────────────────────
+        const scenarioSelect    = document.getElementById('scenarioSelect');
+        const areaServicoSelect = document.getElementById('areaServico');
+        const servicoSelect     = document.getElementById('servicoEspecifico');
+        const dynamicFields     = document.getElementById('dynamicFields');
+        const btnGenerate       = document.getElementById('btnGenerate');
+        const apiKeyInput       = document.getElementById('apiKeyInput');
+        const errorMsg          = document.getElementById('errorMsg');
+        const emptyState        = document.getElementById('emptyState');
+        const resultContent     = document.getElementById('resultContent');
+        const loadingOverlay    = document.getElementById('loadingOverlay');
 
-        const pasteZone = document.getElementById('pasteZone');
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const errorMsg = document.getElementById('errorMsg');
-        const btnHistory = document.getElementById('btnHistory');
-        
-        // Esconde UI de resultados no início
-        document.getElementById('resultsGrid').style.display = 'none';
+        // ── Area → Service listener ───────────────────────────────────────────
+        areaServicoSelect.addEventListener('change', function () {
+            const area = this.value;
+            servicoSelect.innerHTML = '<option value="">Selecione...</option>';
 
-        window.resetUI = function() {
-            document.getElementById('uploadArea').style.display = 'block';
-            document.getElementById('resultsGrid').style.display = 'none';
-            document.getElementById('statusBadge').style.display = 'none';
-            document.getElementById('analysisSubtitle').innerText = 'Awaiting image upload...';
-            errorMsg.style.display = 'none';
+            if (area === 'A confirmar' || !AREAS_SERVICO[area]) {
+                servicoSelect.disabled = true;
+                servicoSelect.innerHTML = '<option value="">N/A</option>';
+            } else {
+                servicoSelect.disabled = false;
+                AREAS_SERVICO[area].forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = s;
+                    servicoSelect.appendChild(opt);
+                });
+            }
+            checkFormReady();
+        });
+
+        servicoSelect.addEventListener('change', checkFormReady);
+
+        // ── Scenario → Dynamic fields ─────────────────────────────────────────
+        scenarioSelect.addEventListener('change', (e) => {
+            const fields = scenarioFieldsMap[e.target.value];
+            dynamicFields.innerHTML = fields ? fields.map(f => fieldsHtml[f]).join('') : '';
+            document.querySelectorAll('.required-field').forEach(i => i.addEventListener('input', checkFormReady));
+            checkFormReady();
+        });
+
+        // ── API Key input ─────────────────────────────────────────────────────
+        apiKeyInput.addEventListener('input', checkFormReady);
+
+        // ── Form validation ───────────────────────────────────────────────────
+        function checkFormReady() {
+            const hasKey      = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key');
+            const hasScenario = !!scenarioSelect.value;
+            const hasArea     = !!areaServicoSelect.value;
+            const hasService  = areaServicoSelect.value === 'A confirmar' || !!servicoSelect.value;
+            const reqFilled   = Array.from(document.querySelectorAll('.required-field')).every(i => i.value.trim());
+            btnGenerate.disabled = !(hasKey && hasScenario && hasArea && hasService && reqFilled);
         }
 
-        pasteZone.addEventListener('click', () => pasteZone.focus());
-        document.addEventListener('paste', async (e) => {
+        // ── Generate click ────────────────────────────────────────────────────
+        btnGenerate.addEventListener('click', async () => {
             errorMsg.style.display = 'none';
-            let key = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key') || HARDCODED_API_KEY;
-            
+
+            const key = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key');
             if (!key) {
-                errorMsg.innerText = "Por favor, insira sua Chave de API do Gemini.";
-                errorMsg.style.display = 'block';
+                showError('Por favor, insira sua Chave de API do Gemini.');
                 return;
             }
 
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            let imageFile = null;
-            for (let item of items) {
-                if (item.type.indexOf("image") === 0) {
-                    imageFile = item.getAsFile(); break;
-                }
-            }
+            const scenario    = scenarioSelect.value;
+            const nomeCliente = document.getElementById('nomeCliente')?.value || '[Nome]';
+            const ticketId    = document.getElementById('ticketId')?.value    || '[Ticket]';
+            const nomeContato = document.getElementById('nomeContato')?.value || '[Contato]';
+            const contextVal  = document.getElementById('context')?.value     || (areaServicoSelect.value + ' - ' + (servicoSelect.value || 'Geral'));
 
-            if (!imageFile) return;
+            let baseText = phraseDatabase[scenario] || '';
+            baseText = baseText
+                .replace('{nome}',       nomeCliente)
+                .replace('{ticketId}',   ticketId)
+                .replace('{nomeContato}',nomeContato)
+                .replace('{context}',    contextVal);
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const base64Data = event.target.result;
-                document.getElementById('imagePreview').src = base64Data;
-                
-                document.getElementById('uploadArea').style.display = 'none';
-                document.getElementById('loadingContainer').style.display = 'flex';
+            const finalPrompt = `Texto base:\n"${baseText}"\n\nReescreva-o de forma premium e retorne o JSON.`;
 
-                await processAPI(base64Data.split(',')[1], imageFile.type, key);
-            };
-            reader.readAsDataURL(imageFile);
-        });
+            // Show loading
+            const oldContent = document.getElementById('resultContent');
+            if(oldContent) oldContent.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
 
-        async function processAPI(base64, mimeType, key) {
             try {
+                // ── Official @google/genai SDK ────────────────────────────────────
                 const ai = new GoogleGenAI({ apiKey: key });
-                const defaultModels = ['gemini-3.6-flash', 'gemini-3.7-flash'];
-                const savedModel = localStorage.getItem('helpzap_successful_model');
-                const models = savedModel ? [savedModel, ...defaultModels.filter(m => m !== savedModel)] : defaultModels;
-                
-                let successResponse = null;
-                for (let model of models) {
+                // gemini-3.6-flash is the current recommended model
+                const MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+                let rawResponse = null;
+                let lastError   = null;
+
+                for (const model of MODELS) {
                     try {
                         const response = await ai.models.generateContent({
-                            model: model,
-                            contents: [ SYSTEM_PROMPT, { inlineData: { data: base64, mimeType: mimeType } } ],
-                            config: { temperature: 0.3 }
+                            model,
+                            contents: finalPrompt,
+                            config: {
+                                temperature: 0.45,
+                                systemInstruction: SYSTEM_PROMPT
+                            }
                         });
-                        successResponse = response.text;
-                        localStorage.setItem('helpzap_api_key', key);
-                        localStorage.setItem('helpzap_successful_model', model);
-                        if (document.getElementById('apiKeyContainer')) document.getElementById('apiKeyContainer').style.display = 'none';
-                        break;
-                    } catch (e) {
-                        console.warn(e);
+                        rawResponse = response.text;
+                        if (rawResponse) {
+                            localStorage.setItem('helpzap_api_key', key);
+                            const ac = document.getElementById('apiKeyContainer');
+                            if (ac) ac.style.display = 'none';
+                            setApiStatus('ok', `Conectado · ${model}`);
+                            break;
+                        }
+                    } catch (modelErr) {
+                        lastError = modelErr.message || String(modelErr);
+                        console.warn(`Model ${model} failed:`, modelErr);
+                        // Auth errors: stop immediately
+                        if (/api.key|invalid.key|permission|401|403/i.test(lastError)) break;
                     }
                 }
 
-                if (!successResponse) throw new Error("A API falhou para todos os modelos configurados. Verifique sua chave.");
+                if (!rawResponse) {
+                    const isAuthErr = /api.key|invalid.key|permission|401|403/i.test(lastError || '');
+                    if (isAuthErr) {
+                        localStorage.removeItem('helpzap_api_key');
+                        apiKeyInput.value = '';
+                        setApiStatus('error', 'Chave inválida');
+                        openApiKeyModal('Chave recusada', 'Sua API Key foi rejeitada. Verifique se está correta.');
+                    } else {
+                        setApiStatus('error', 'Falha na geração');
+                        showError(`Nenhum modelo respondeu. ${lastError || ''}`);
+                    }
+                    loadingOverlay.style.display = 'none';
+                    return;
+                }
 
-                let jsonStr = successResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                // Parse JSON
+                let jsonStr = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const start = jsonStr.indexOf('{');
-                const end = jsonStr.lastIndexOf('}');
+                const end   = jsonStr.lastIndexOf('}');
                 if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
-                
                 const data = JSON.parse(jsonStr);
 
-                // Render Scenario
-                document.getElementById('scenarioTitle').innerText = data.scenario;
-                document.getElementById('scenarioDesc').innerText = data.scenario_description;
-                document.getElementById('analysisSubtitle').innerText = `Ticket - ${data.scenario}`;
+                // Update history
+                const today = new Date().toLocaleDateString('pt-BR');
+                let hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
+                hist[today] = (hist[today] || 0) + 1;
+                localStorage.setItem('helpzap_history', JSON.stringify(hist));
 
-                // Render Checklist
-                const checklistHtml = data.checklist.map(item => `
-                    <div class="checklist-item">
-                        <i class="fa-regular ${item.checked ? 'fa-circle-check icon-check' : 'fa-circle icon-empty'} checklist-icon"></i>
-                        <div>
-                            <div class="checklist-text">${item.text}</div>
-                            <div class="checklist-subtext ${item.checked ? '' : 'muted'}">${item.subtext}</div>
-                        </div>
-                    </div>
-                `).join('');
-                document.getElementById('checklistContainer').innerHTML = checklistHtml;
+                if (typeof updateDashboardStats === 'function') updateDashboardStats();
 
-                // Render Responses
-                const container = document.getElementById('responsesModalContainer');
-                container.innerHTML = '';
-                
-                const tons = [
-                    { key: 'formal', icon: 'fa-user-tie', label: 'Opção 1: Formal' },
-                    { key: 'direto', icon: 'fa-bolt', label: 'Opção 2: Direto' },
-                    { key: 'acolhedor', icon: 'fa-heart', label: 'Opção 3: Acolhedor' }
-                ];
-                
-                window.responseTexts = {};
-                
-                tons.forEach((tom) => {
-                    const rawText = data.suggested_responses[tom.key] || "";
-                    window.responseTexts[tom.key] = rawText;
-                    
-                    let htmlText = rawText.replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>').replace(/\\n/g, '<br>');
-                    
-                    const card = document.createElement('div');
-                    card.className = 'card card-response';
-                    card.innerHTML = `
-                        <div class="card-header">
-                            <span class="card-title"><i class="fa-solid ${tom.icon}"></i> ${tom.label}</span>
-                        </div>
-                        <div class="card-body response-text">
-                            ${htmlText}
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn-new-analysis btn-copy-multi" data-key="${tom.key}" style="margin: 0; padding: 0.6rem 1.2rem;"><i class="fa-regular fa-copy"></i> Copiar ${tom.label}</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-                
-                document.querySelectorAll('.btn-copy-multi').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const key = e.currentTarget.getAttribute('data-key');
-                        try {
-                            await navigator.clipboard.writeText(window.responseTexts[key]);
-                            const originalHtml = e.currentTarget.innerHTML;
-                            e.currentTarget.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                            
-                            let historyStr = localStorage.getItem('helpzap_history') || '{}';
-                            let history = JSON.parse(historyStr);
-                            let today = new Date().toLocaleDateString('pt-BR');
-                            history[today] = (history[today] || 0) + 1;
-                            localStorage.setItem('helpzap_history', JSON.stringify(history));
-
-                            setTimeout(() => e.currentTarget.innerHTML = originalHtml, 2000);
-                        } catch(err) {}
-                    });
-                });
-                
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('resultsGrid').style.display = 'grid';
-                document.getElementById('responsesModal').style.display = 'flex';
-                document.getElementById('statusBadge').style.display = 'flex';
+                // Render result
+                renderResults(data.suggested_responses, scenarioTextMap[scenario]);
 
             } catch (err) {
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('uploadArea').style.display = 'block';
-                errorMsg.innerText = err.message;
-                errorMsg.style.display = 'block';
+                const msg = (err.message || '').toLowerCase();
+                // Detect API key-related errors and trigger the modal
+                const isKeyError = msg.includes('api key') || msg.includes('api_key') ||
+                                   msg.includes('unauthorized') || msg.includes('invalid key') ||
+                                   msg.includes('permission') || msg.includes('401') ||
+                                   msg.includes('todos os modelos falharam');
+                if (isKeyError) {
+                    localStorage.removeItem('helpzap_api_key');
+                    apiKeyInput.value = '';
+                    openApiKeyModal('error', 'Chave de API inválida', 'Sua chave foi rejeitada pela API do Gemini. Verifique se ela está correta e tente novamente.');
+                } else {
+                    showError(err.message || 'Ocorreu um erro inesperado.');
+                }
+            } finally {
+                loadingOverlay.style.display = 'none';
+            }
+        });
+
+        // ── Render result cards ───────────────────────────────────────────────
+        function renderResults(responses, scenarioName) {
+            resultContent.innerHTML = '';
+            document.getElementById('responseModalTitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas: ${scenarioName}`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'response-cards-grid';
+
+            const definitions = {
+                'formal':    { label: 'Profissional', icon: 'fa-briefcase', rec: false },
+                'direto':    { label: 'Direto',       icon: 'fa-bolt',      rec: true },
+                'acolhedor': { label: 'Acolhedor',    icon: 'fa-heart',     rec: false }
+            };
+
+            window._helpzapResponses = {};
+
+            ['formal', 'direto', 'acolhedor'].forEach(key => {
+                const respObj = responses[key] || { texto: 'Indisponível', probabilidade: 0 };
+                const textStr = typeof respObj === 'string' ? respObj : (respObj.texto || '');
+                const prob    = typeof respObj === 'object' && respObj.probabilidade ? respObj.probabilidade : 0;
+                
+                window._helpzapResponses[key] = textStr;
+                const def = definitions[key];
+                const icon = def.icon;
+                const label = def.label;
+                const recommended = def.rec;
+
+                const htmlText = textStr
+                    .replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>')
+                    .replace(/\\n/g, '<br>')
+                    .replace(/\n/g, '<br>');
+
+                const card = document.createElement('div');
+                card.className = `card-response${recommended ? ' recommended' : ''}`;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <span class="card-title"><i class="fa-solid ${icon}"></i> ${label}</span>
+                            <div class="badge-accuracy"><i class="fa-solid fa-bullseye"></i> ${prob}% precisão</div>
+                        </div>
+                        ${recommended ? '<span class="badge-recommend">RECOMENDADO</span>' : ''}
+                    </div>
+                    <div class="response-text">${htmlText}</div>
+                    <div class="resp-footer">
+                        <div class="resp-footer-actions">
+                            <button class="btn-copy" data-key="${key}"><i class="fa-regular fa-copy"></i> Copiar</button>
+                            <button class="btn-icon btn-like" title="Gostei dessa resposta"><i class="fa-regular fa-thumbs-up"></i></button>
+                        </div>
+                        <button class="btn-secondary btn-regenerate" title="Gerar nova versão desta resposta"><i class="fa-solid fa-rotate-right"></i> Regerar</button>
+                    </div>`;
+                grid.appendChild(card);
+            });
+
+            resultContent.appendChild(grid);
+            resultContent.style.display = 'flex';
+            document.getElementById('responseModal').style.display = 'flex';
+
+            // Copy buttons
+            grid.querySelectorAll('.btn-copy').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const k = btn.dataset.key;
+                    try {
+                        await navigator.clipboard.writeText(window._helpzapResponses[k]);
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
+                            btn.classList.remove('copied');
+                        }, 2200);
+                    } catch (_) {}
+                });
+            });
+
+            // Like buttons
+            grid.querySelectorAll('.btn-like').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('liked');
+                    const icon = btn.querySelector('i');
+                    if (btn.classList.contains('liked')) {
+                        icon.classList.remove('fa-regular');
+                        icon.classList.add('fa-solid');
+                    } else {
+                        icon.classList.remove('fa-solid');
+                        icon.classList.add('fa-regular');
+                    }
+                });
+            });
+
+            // Regenerate buttons
+            grid.querySelectorAll('.btn-regenerate').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('btnGenerate').click();
+                });
+            });
+
+            // Back button
+            document.getElementById('btnBack').addEventListener('click', () => {
+                resultContent.style.display = 'none';
+                resultContent.innerHTML = '';
+                emptyState.style.display = 'flex';
+            });
+        }
+
+        // ── API Key Status & Modal Logic ──────────────────────────────────────
+        const apiKeyModal      = document.getElementById('apiKeyModal');
+        const modalApiKeyInput = document.getElementById('modalApiKeyInput');
+        const btnSaveApiKey    = document.getElementById('btnSaveApiKey');
+        const btnTestKey       = document.getElementById('btnTestKey');
+        const testResultEl     = document.getElementById('testResult');
+        const apikeyErrorTag   = document.getElementById('apikeyErrorTag');
+
+        // Update the sidebar API status pill
+        function setApiStatus(state, label) {
+            const btn  = document.getElementById('btnApiStatus');
+            const lbl  = document.getElementById('apiStatusLabel');
+            // Remove all state classes
+            btn.classList.remove('st-unknown', 'st-testing', 'st-ok', 'st-error');
+            btn.classList.add(`st-${state}`);
+            lbl.textContent = label;
+            // Also update the in-modal status row
+            const dot  = document.getElementById('modalStatusDot');
+            const txt  = document.getElementById('modalStatusText');
+            const mdl  = document.getElementById('modalStatusModel');
+            const colors = { unknown: 'var(--text-muted)', testing: '#ca8a04', ok: '#22c55e', error: '#f87171' };
+            if (dot) dot.style.background = colors[state] || colors.unknown;
+            if (txt) txt.textContent = label;
+            if (mdl && state !== 'ok') mdl.textContent = '';
+        }
+
+        // Lightweight key validation via SDK — uses same API as generation
+        async function testApiKey(key) {
+            setTestResult('testing', '<i class="fa-solid fa-spinner fa-spin"></i> Testando conexão...');
+            setApiStatus('testing', 'Testando...');
+            try {
+                const ai = new GoogleGenAI({ apiKey: key });
+                const response = await ai.models.generateContent({
+                    model: 'gemini-3.6-flash',
+                    contents: 'Responda apenas: OK',
+                    config: { maxOutputTokens: 5 }
+                });
+                if (response.text) {
+                    setTestResult('ok', '<i class="fa-solid fa-circle-check"></i> Conexão validada! Modelo: gemini-3.6-flash');
+                    setApiStatus('ok', 'Conectado · gemini-3.6-flash');
+                    return true;
+                } else {
+                    throw new Error('Resposta vazia do modelo');
+                }
+            } catch (e) {
+                const msg = e.message || String(e);
+                setTestResult('error', `<i class="fa-solid fa-circle-xmark"></i> ${msg}`);
+                setApiStatus('error', 'Chave inválida');
+                return false;
             }
         }
 
-        // Modal History
-        btnHistory.addEventListener('click', () => {
-            const list = document.getElementById('historyList');
-            let historyStr = localStorage.getItem('helpzap_history') || '{}';
-            let history = JSON.parse(historyStr);
-            let dates = Object.keys(history).sort((a,b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
-            
-            if (dates.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-muted);text-align:center;">Nenhum registro ainda.</p>';
+        function setTestResult(state, html) {
+            testResultEl.className = `test-result ${state}`;
+            testResultEl.innerHTML = html;
+            testResultEl.style.display = 'flex';
+        }
+
+        function openApiKeyModal(title, desc) {
+            modalApiKeyInput.value = '';
+            testResultEl.style.display = 'none';
+            btnSaveApiKey.disabled = true;
+            btnTestKey.disabled = true;
+            if (apikeyErrorTag) apikeyErrorTag.style.display = 'none';
+            // Sync modal status row with current state
+            const savedKey = localStorage.getItem('helpzap_api_key');
+            const statusBtn = document.getElementById('btnApiStatus');
+            const isOk = statusBtn && statusBtn.classList.contains('st-ok');
+            const dot  = document.getElementById('modalStatusDot');
+            const txt  = document.getElementById('modalStatusText');
+            if (dot) dot.style.background = isOk ? '#22c55e' : savedKey ? '#ca8a04' : 'var(--text-muted)';
+            if (txt) txt.textContent = isOk ? 'Conectado' : savedKey ? 'Chave salva (não validada)' : 'Nenhuma chave configurada';
+            apiKeyModal.style.display = 'flex';
+            setTimeout(() => modalApiKeyInput.focus(), 100);
+        }
+
+        modalApiKeyInput.addEventListener('input', () => {
+            const hasVal = !!modalApiKeyInput.value.trim();
+            btnSaveApiKey.disabled = !hasVal;
+            btnTestKey.disabled    = !hasVal;
+            testResultEl.style.display = 'none';
+        });
+
+        modalApiKeyInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !btnSaveApiKey.disabled) btnSaveApiKey.click();
+        });
+
+        // Test button: validate key WITHOUT saving
+        btnTestKey.addEventListener('click', async () => {
+            const k = modalApiKeyInput.value.trim();
+            if (!k) return;
+            btnTestKey.disabled = true;
+            btnSaveApiKey.disabled = true;
+            await testApiKey(k);
+            btnTestKey.disabled = false;
+            btnSaveApiKey.disabled = false;
+        });
+
+        // Save & validate: save then auto-test
+        btnSaveApiKey.addEventListener('click', async () => {
+            const newKey = modalApiKeyInput.value.trim();
+            if (!newKey) return;
+            btnSaveApiKey.disabled = true;
+            btnTestKey.disabled    = true;
+            const ok = await testApiKey(newKey);
+            if (ok) {
+                localStorage.setItem('helpzap_api_key', newKey);
+                apiKeyInput.value = newKey;
+                const ac = document.getElementById('apiKeyContainer');
+                if (ac) ac.style.display = 'none';
+                checkFormReady();
+                // Close after short delay so user sees the "success" state
+                setTimeout(() => { apiKeyModal.style.display = 'none'; }, 1200);
             } else {
-                list.innerHTML = dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${history[d]} tickets</span></div>`).join('');
+                // Key failed — keep modal open, re-enable buttons
+                btnSaveApiKey.disabled = false;
+                btnTestKey.disabled    = false;
             }
+        });
+
+        document.getElementById('btnCancelApiKey').addEventListener('click', () => {
+            apiKeyModal.style.display = 'none';
+        });
+
+        // Sidebar status pill opens the modal
+        document.getElementById('btnApiStatus').addEventListener('click', () => {
+            openApiKeyModal();
+        });
+
+        // Auto-open on load if no key saved
+        const _savedKey = localStorage.getItem('helpzap_api_key');
+        if (_savedKey) {
+            apiKeyInput.value = _savedKey;
+            // Run a silent background validation
+            testApiKey(_savedKey).then(ok => {
+                if (!ok) {
+                    // Key saved but invalid — prompt silently (no auto-open)
+                    setApiStatus('error', 'Chave inválida');
+                }
+            });
+        } else {
+            setTimeout(() => openApiKeyModal('Bem-vindo ao Helpzap AI!', 'Insira sua API Key do Gemini para começar.'), 600);
+        }
+
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+
+        // ── Modal Logic ───────────────────────────────────────────────────────
+        document.getElementById('btnCloseResponseModal').addEventListener('click', () => {
+            document.getElementById('responseModal').style.display = 'none';
+        });
+
+        document.getElementById('btnHistorySidebar').addEventListener('click', (e) => {
+            e.preventDefault();
+            const list = document.getElementById('historyList');
+            const hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
+            const dates = Object.keys(hist).sort((a, b) =>
+                new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'))
+            );
+            list.innerHTML = dates.length === 0
+                ? '<p style="color:var(--text-muted);text-align:center;padding:1rem;">Nenhum registro ainda.</p>'
+                : dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${hist[d]} tickets</span></div>`).join('');
             document.getElementById('historyModal').style.display = 'flex';
         });
+        document.getElementById('btnCloseHistory').addEventListener('click', () => document.getElementById('historyModal').style.display = 'none');
 
-        document.getElementById('btnCloseHistory').addEventListener('click', () => {
-            document.getElementById('historyModal').style.display = 'none';
+        document.getElementById('btnInsightsSidebar').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('insightsModal').style.display = 'flex';
         });
+        document.getElementById('btnCloseInsights').addEventListener('click', () => document.getElementById('insightsModal').style.display = 'none');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('helpzap_api_key')) {
-                const ac = document.getElementById('apiKeyContainer');
-                if(ac) ac.style.display = 'none';
+        document.getElementById('btnDocsSidebar').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('docsModal').style.display = 'flex';
+        });
+        document.getElementById('btnCloseDocsModal').addEventListener('click', () => document.getElementById('docsModal').style.display = 'none');
+
+        // ── Theme Toggle ──────────────────────────────────────────────────────
+        const htmlEl     = document.documentElement;
+        const themeIcon  = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                htmlEl.setAttribute('data-theme', 'light');
+                themeIcon.className    = 'fa-solid fa-sun';   // sol = estamos no claro
+                themeLabel.textContent = 'Modo Claro';        // mostra o modo ATUAL
+            } else {
+                htmlEl.removeAttribute('data-theme');
+                themeIcon.className    = 'fa-solid fa-moon';  // lua = estamos no escuro
+                themeLabel.textContent = 'Modo Escuro';       // mostra o modo ATUAL
             }
-            resetUI();
+            localStorage.setItem('helpzap_theme', theme);
+        }
+
+        // Restore saved theme (default = light / ZG brand)
+        const savedTheme = localStorage.getItem('helpzap_theme') || 'light';
+        applyTheme(savedTheme);
+
+        document.getElementById('btnThemeToggle').addEventListener('click', () => {
+            const current = htmlEl.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            applyTheme(current === 'light' ? 'dark' : 'light');
+            localStorage.setItem('helpzap_theme_user_set', '1'); // user explicitly chose
         });
+
+        // Migration: if user never explicitly picked a theme, clear old 'dark' so light wins
+        if (!localStorage.getItem('helpzap_theme_user_set')) {
+            localStorage.removeItem('helpzap_theme');
+        }
+
+        // ── Init: restore saved API key ───────────────────────────────────────
+        if (localStorage.getItem('helpzap_api_key')) {
+            const ac = document.getElementById('apiKeyContainer');
+            if (ac) ac.style.display = 'none';
+        }
+        checkFormReady();
+
+        // Dashboard sync
+        function updateDashboardStats() {
+            const hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
+            const today = new Date().toLocaleDateString('pt-BR');
+            let total = 0;
+            for (let key in hist) {
+                total += hist[key];
+            }
+            const todayCount = hist[today] || 0;
+            
+            const elToday = document.getElementById('dashToday');
+            if (elToday) elToday.innerText = todayCount;
+            
+            const elTotal = document.getElementById('dashTotal');
+            if (elTotal) elTotal.innerText = total;
+            
+            const minsSaved = total * 5;
+            const hours = Math.floor(minsSaved / 60);
+            const mins = minsSaved % 60;
+            const elTime = document.getElementById('dashTime');
+            if (elTime) elTime.innerText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+        }
+        updateDashboardStats();
     </script>
 </body>
 </html>
