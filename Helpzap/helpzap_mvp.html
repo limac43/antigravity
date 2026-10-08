@@ -10,6 +10,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         /* ─── DARK THEME (default) ─────────────────────────────────────────── */
+        ::selection { background-color: #1ed760; color: #000; }
+
         :root {
             --bg-sidebar:     #0A101D;
             --bg-main:        #0B1121;
@@ -90,7 +92,7 @@
         .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
         /* Theme toggle button */
-        .btn-theme-toggle { display: flex; align-items: center; gap: 0.6rem; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; margin-bottom: 1rem; justify-content: center; }
+        .btn-theme-toggle { display: flex; align-items: center; gap: 0.6rem; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; justify-content: center; position: fixed; top: 1.5rem; right: 2.5rem; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.2s; }
         .btn-theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
         .btn-theme-toggle .toggle-track { width: 32px; height: 18px; background: var(--card-border); border-radius: 999px; position: relative; border: 1px solid var(--card-border); margin-left: auto; }
         .btn-theme-toggle .toggle-knob { width: 12px; height: 12px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s, background 0.2s; }
@@ -105,8 +107,10 @@
         .sidebar-footer { border-top: 1px solid var(--card-border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
         .sidebar-version { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem; opacity: 0.6; }
 
-        /* Main Content */
+        /* Main Content & Views */
         .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
         .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
         .top-header h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.25rem; }
         .top-header .subtitle { color: var(--text-muted); font-size: 1rem; }
@@ -227,112 +231,143 @@
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Helpzap AI</div>
-                <span class="sidebar-subtitle">Manual Command</span>
+                <span class="sidebar-subtitle" style="text-transform: none; font-size: 0.8rem; opacity: 0.8;">O copiloto do analista de suporte</span>
             </div>
 
-            <button class="btn-generate" id="btnGenerate" disabled>
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Resposta
+            <button class="btn-generate" id="btnNavGenerate">
+                ✨ Gerar Resposta
             </button>
-
-            <!-- Theme Toggle -->
-            <button class="btn-theme-toggle" id="btnThemeToggle">
-                <i class="fa-solid fa-sun" id="themeIcon"></i>
-                <span id="themeLabel">Modo Claro</span>
-                <div class="toggle-track"><div class="toggle-knob"></div></div>
-            </button>
-
-            <!-- API Key Status Button -->
-            <button class="btn-api-status st-unknown" id="btnApiStatus">
-                <span class="status-dot"></span>
-                <span class="status-label" id="apiStatusLabel">API Key</span>
-                <span class="status-edit"><i class="fa-solid fa-pen-to-square"></i></span>
-            </button>
+            
+            <hr style="border: none; border-top: 1px solid var(--card-border); margin: 0.5rem 0 1rem;">
 
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-                <button class="nav-item" id="btnHistorySidebar"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
-                <button class="nav-item" id="btnInsightsSidebar"><i class="fa-regular fa-lightbulb"></i> Insights</button>
+                <button class="nav-item active" id="btnNavDashboard"><i class="fa-solid fa-border-all"></i> Dashboard</button>
+                <button class="nav-item" id="btnNavHistory"><i class="fa-solid fa-clock-rotate-left"></i> Histórico</button>
+                <button class="nav-item" id="btnNavInsights"><i class="fa-regular fa-lightbulb"></i> Insights</button>
+                
+                <hr style="border: none; border-top: 1px solid var(--card-border); margin: 0.5rem 0;">
+                
+                <button class="nav-item" id="btnNavConfig"><i class="fa-solid fa-gear"></i> Configurações</button>
+                <button class="nav-item" id="btnNavDocs"><i class="fa-solid fa-book"></i> Docs</button>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="nav-item" id="btnDocsSidebar"><i class="fa-solid fa-book"></i> Docs</button>
-                <div class="sidebar-version">Support Command v1.1</div>
+                <!-- API Key Status Button -->
+                <button class="btn-api-status st-unknown" id="btnApiStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-label" id="apiStatusLabel">Gemini conectado</span>
+                </button>
+
             </div>
         </aside>
 
+        <!-- Theme Toggle Floating -->
+        <button class="btn-theme-toggle" id="btnThemeToggle">
+            <i class="fa-solid fa-sun" id="themeIcon"></i>
+            <span id="themeLabel">Tema: Claro</span>
+            <div class="toggle-track"><div class="toggle-knob"></div></div>
+        </button>
+
         <!-- Main Content -->
         <main class="main-content">
-            <div class="top-header">
-                <div>
-                    <h2>Support Command</h2>
-                    <p class="subtitle">Geração manual de respostas contextuais</p>
-                </div>
-            </div>
-
             <div id="errorMsg" class="error-banner"></div>
 
-            <div class="results-grid">
-                <!-- Left: Form -->
-                <div class="col-left">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title"><i class="fa-solid fa-sliders"></i> Contexto do Chamado</span>
+            <!-- VIEW: GERAR RESPOSTA -->
+            <section id="view-generate" class="view-section active">
+                <div class="top-header">
+                    <div>
+                        <h2>Gerar resposta</h2>
+                        <p class="subtitle">Transforme pedidos de prioridade em respostas rápidas, claras e personalizadas.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">Informe o contexto do chamado e deixe o Helpzap criar respostas prontas para você.</p>
+                    </div>
+                </div>
+
+                <div class="results-grid" style="height: auto; margin-bottom: 2rem;">
+                    <!-- Left: Form -->
+                    <div class="col-left">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title"><i class="fa-solid fa-sliders"></i> Contexto do chamado</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fa-solid fa-list"></i> Cenário</label>
+                                    <select id="scenarioSelect" class="form-select">
+                                        <option value="" disabled selected>Selecione um cenário...</option>
+                                        <option value="1">Chamado(s) priorizado(s)</option>
+                                        <option value="2">Chamado em atendimento</option>
+                                        <option value="3">Segunda cobrança</option>
+                                        <option value="4">Zerinho finalizou, cliente discorda</option>
+                                        <option value="5">Relato sem ticket aberto</option>
+                                        <option value="6">Cliente recusa abrir ticket</option>
+                                        <option value="7">Info nova em ticket aberto (Mensagem Interna)</option>
+                                        <option value="8">Solicitação de contato telefônico</option>
+                                        <option value="9">Instabilidade sistêmica (Incidente)</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: flex; gap: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label class="form-label"><i class="fa-solid fa-building"></i> Área</label>
+                                        <select id="areaServico" class="form-select">
+                                            <option value="" disabled selected>Selecione...</option>
+                                            <option value="Operadoras">Operadoras</option>
+                                            <option value="Núcleos">Núcleos</option>
+                                            <option value="A confirmar">A confirmar</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label class="form-label"><i class="fa-solid fa-briefcase"></i> Serviço</label>
+                                        <select id="servicoEspecifico" class="form-select" disabled>
+                                            <option value="">Selecione a área...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="dynamicFields"></div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group" id="apiKeyContainer">
-                                <label class="form-label"><i class="fa-solid fa-key"></i> Chave da API</label>
-                                <input type="password" id="apiKeyInput" class="form-input" placeholder="Cole sua API Key do Gemini..." autocomplete="off">
+                    </div>
+                    <!-- Right: Pedido do Cliente -->
+                    <div class="col-right">
+                        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+                            <div class="card-header">
+                                <span class="card-title"><i class="fa-regular fa-comment-dots"></i> O que o cliente solicitou?</span>
                             </div>
-
-                            <div class="form-group">
-                                <label class="form-label"><i class="fa-solid fa-list"></i> Cenário</label>
-                                <select id="scenarioSelect" class="form-select">
-                                    <option value="" disabled selected>Selecione um cenário...</option>
-                                    <option value="1">Chamado(s) priorizado(s)</option>
-                                    <option value="2">Chamado em atendimento</option>
-                                    <option value="3">Segunda cobrança</option>
-                                    <option value="4">Zerinho finalizou, cliente discorda</option>
-                                    <option value="5">Relato sem ticket aberto</option>
-                                    <option value="6">Cliente recusa abrir ticket</option>
-                                    <option value="7">Info nova em ticket aberto (Mensagem Interna)</option>
-                                    <option value="8">Solicitação de contato telefônico</option>
-                                    <option value="9">Instabilidade sistêmica (Incidente)</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 1rem;">
-                                <div class="form-group" style="flex: 1;">
-                                    <label class="form-label"><i class="fa-solid fa-building"></i> Área</label>
-                                    <select id="areaServico" class="form-select">
-                                        <option value="" disabled selected>Selecione...</option>
-                                        <option value="Operadoras">Operadoras</option>
-                                        <option value="Núcleos">Núcleos</option>
-                                        <option value="A confirmar">A confirmar</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="flex: 1;">
-                                    <label class="form-label"><i class="fa-solid fa-briefcase"></i> Serviço</label>
-                                    <select id="servicoEspecifico" class="form-select" disabled>
-                                        <option value="">Selecione a área...</option>
-                                    </select>
+                            <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
+                                <label class="form-label" style="font-weight: 400; margin-bottom: 0.75rem;">Descreva ou cole o pedido de prioridade recebido pelo cliente.</label>
+                                <textarea id="pedidoCliente" class="form-input" style="flex: 1; resize: none; min-height: 160px;" placeholder="Ex.: Cliente solicita prioridade no atendimento, pois precisa acessar o sistema ainda hoje."></textarea>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fa-solid fa-circle-info"></i> Quanto mais contexto você fornecer, mais personalizada será a resposta.
                                 </div>
                             </div>
-
-                            <div id="dynamicFields"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Result -->
-                <div class="col-right">
-                    <div class="loading-overlay" id="loadingOverlay">
-                        <div class="spinner"></div>
-                        <div style="color: var(--primary); font-weight: 500;">Gerando resposta perfeita...</div>
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                    <button class="btn-generate" id="btnGenerateAction" style="width: auto; padding: 1rem 3rem; font-size: 1.1rem; border-radius: 999px;">
+                        ✨ Gerar respostas
+                    </button>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Análise realizada com IA em poucos segundos.</span>
+                </div>
+
+                <div class="loading-overlay" id="loadingOverlay" style="position: relative; height: 150px; background: transparent; display: none;">
+                    <div class="spinner"></div>
+                    <div style="color: var(--primary); font-weight: 500;">Analisando o contexto do chamado...</div>
+                </div>
+
+                
+            </section>
+
+            <!-- VIEW: DASHBOARD -->
+            <section id="view-dashboard" class="view-section">
+                <div class="top-header">
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p class="subtitle">Métricas e produtividade do Helpzap</p>
                     </div>
-
-                    <!-- resultContent movido para modal -->
-
-                    <div id="emptyState" class="dashboard-metrics" style="display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 0.5rem;">
+                </div>
+<div id="emptyState" class="dashboard-metrics" style="display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 0.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-card);"><i class="fa-solid fa-chart-pie" style="color: var(--primary); margin-right: 0.5rem;"></i> Visão Geral de Produtividade</h3>
                             <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--history-bg); padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--card-border);">Atualizado em tempo real</span>
@@ -447,69 +482,32 @@
                             </div>
                         </div>
                     </div>
+
+            </section>
+            
+            <!-- VIEW: HISTORICO -->
+            <section id="view-history" class="view-section">
+                <div class="top-header">
+                    <div>
+                        <h2>Histórico</h2>
+                        <p class="subtitle">Seus tickets e respostas geradas anteriormente</p>
+                    </div>
                 </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal: API Key -->
-    <div class="modal-overlay" id="apiKeyModal">
-        <div class="modal-content" style="max-width: 460px;">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-key"></i> Configurar API Key do Gemini</div>
-                <button class="btn-close" id="btnCancelApiKey"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <!-- Status row inside modal -->
-            <div id="modalApiStatusRow" style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-radius:8px; margin-bottom:1rem; background:var(--history-bg); border:1px solid var(--card-border);">
-                <span id="modalStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
-                <span id="modalStatusText" style="font-size:0.85rem;color:var(--text-muted);">Nenhuma chave configurada</span>
-                <span id="modalStatusModel" style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;"></span>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label"><i class="fa-solid fa-key"></i> Nova API Key</label>
-                <input type="password" id="modalApiKeyInput" class="form-input" placeholder="Cole aqui sua Gemini API Key..." autocomplete="off">
-                <div id="apikeyErrorTag" class="apikey-error-tag"><i class="fa-solid fa-circle-exclamation"></i> <span id="apikeyErrorText"></span></div>
-                <div class="apikey-hint">
-                    <i class="fa-solid fa-circle-info"></i>
-                    Obtenha sua chave gratuita em
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i></a>
+                <div class="card" style="padding: 1.5rem;">
+                    <div id="historyList" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 60vh; overflow-y: auto;"></div>
                 </div>
-            </div>
+            </section>
 
-            <div id="testResult" class="test-result"></div>
-
-            <button class="btn-test-key" id="btnTestKey" disabled>
-                <i class="fa-solid fa-plug-circle-check"></i> Testar conexão
-            </button>
-
-            <button class="btn-apikey-save" id="btnSaveApiKey" disabled>
-                <i class="fa-solid fa-floppy-disk"></i> Salvar e validar
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal: History -->
-    <div class="modal-overlay" id="historyModal" onclick="if(event.target===this)this.style.display='none'">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Produtividade</div>
-                <button class="btn-close" id="btnCloseHistory"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="historyList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 350px; overflow-y: auto;"></div>
-        </div>
-    </div>
-
-    <!-- Modal: Insights -->
-    <div class="modal-overlay" id="insightsModal" onclick="if(event.target===this)this.style.display='none'">
-        <div class="modal-content" style="max-width: 680px;">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fa-regular fa-lightbulb"></i> Insights de Atendimento</div>
-                <button class="btn-close" id="btnCloseInsights"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="docs-body" style="padding-right: 0.5rem;">
-                <h3 style="margin-top: 0;">🎯 Princípio Ouro</h3>
+            <!-- VIEW: INSIGHTS -->
+            <section id="view-insights" class="view-section">
+                <div class="top-header">
+                    <div>
+                        <h2>Insights</h2>
+                        <p class="subtitle">Dicas de atendimento e boas práticas</p>
+                    </div>
+                </div>
+                <div class="card docs-body" style="padding: 2rem; max-width: 800px;">
+<h3 style="margin-top: 0;">🎯 Princípio Ouro</h3>
                 <p><strong>Antes de direcionar, INVESTIGUE.</strong> O WhatsApp é uma ferramenta de apoio/relacionamento. O cliente veio até aqui porque precisa de empatia e atenção ágil.</p>
 
                 <hr>
@@ -538,19 +536,75 @@
                 <h4 style="color: var(--text-card); margin-bottom: 0.3rem;">Passo 3: Se for pedir evidência ou abertura de ticket</h4>
                 <p style="margin-bottom: 0.5rem;"><strong>Peça evidências objetivas:</strong> "Me manda o print da tela inteira ou me informe alguns exemplos se possível do protocolo faltante, data de pagamento e etc"</p>
                 <p><strong>Explique o porquê do ticket de forma amigável:</strong> "Para o nosso time técnico conseguir investigar de forma assertiva, preciso registrar isso formalmente. Você já tem o número do ticket? Se sim, pode me passar por gentileza que já solicito prioridade no cenário?"</p>
-            </div>
-        </div>
-    </div>
+                </div>
+            </section>
 
-    <!-- Modal: Docs -->
-    <div class="modal-overlay" id="docsModal" onclick="if(event.target===this)this.style.display='none'">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <div class="modal-title"><i class="fa-solid fa-book"></i> Documentação ZG</div>
-                <button class="btn-close" id="btnCloseDocsModal"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="docs-body">
-                <h3>Chamados priorizados</h3>
+            <!-- VIEW: CONFIGURAÇÕES -->
+            <section id="view-config" class="view-section">
+                <div class="top-header">
+                    <div>
+                        <h2>Configurações</h2>
+                        <p class="subtitle">Ajuste o comportamento do Helpzap AI</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- API KEY CARD -->
+                    <div class="card" style="align-self: start;">
+                        <div class="card-header"><span class="card-title"><i class="fa-solid fa-key"></i> Configuração da IA (API Key)</span></div>
+                        <div class="card-body">
+                            <div id="modalApiStatusRow" style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-radius:8px; margin-bottom:1rem; background:var(--history-bg); border:1px solid var(--card-border);">
+                                <span id="modalStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
+                                <span id="modalStatusText" style="font-size:0.85rem;color:var(--text-muted);">Nenhuma chave configurada</span>
+                                <span id="modalStatusModel" style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nova API Key</label>
+                                <input type="password" id="modalApiKeyInput" class="form-input" placeholder="Cole aqui sua Gemini API Key..." autocomplete="off">
+                                <div id="apikeyErrorTag" class="apikey-error-tag"><i class="fa-solid fa-circle-exclamation"></i> <span id="apikeyErrorText"></span></div>
+                                <div class="apikey-hint">
+                                    <i class="fa-solid fa-circle-info"></i> Obtenha sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                                </div>
+                            </div>
+                            <div id="testResult" class="test-result"></div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <button class="btn-test-key" id="btnTestKey" style="margin-top: 0; flex: 1;" disabled><i class="fa-solid fa-plug-circle-check"></i> Testar</button>
+                                <button class="btn-apikey-save" id="btnSaveApiKey" style="margin-top: 0; flex: 1;" disabled><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PROMPT CARD -->
+                    <div class="card" style="align-self: start;">
+                        <div class="card-header"><span class="card-title"><i class="fa-solid fa-terminal"></i> Prompt Base</span></div>
+                        <div class="card-body">
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                                Edite o prompt de sistema que orienta o Gemini na geração das respostas. <br>
+                                <strong style="color: var(--danger);">Aviso:</strong> Mantenha a instrução de saída em formato JSON.
+                            </p>
+                            <textarea id="promptEditor" class="form-input" style="width: 100%; min-height: 250px; resize: vertical; font-family: monospace; font-size: 0.8rem; line-height: 1.5; white-space: pre-wrap; margin-bottom: 1rem;"></textarea>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div id="promptSaveMsg" style="display: none; color: #22c55e; font-size: 0.85rem; font-weight: 500;">Salvo com sucesso!</div>
+                                <div style="flex: 1;"></div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-secondary" id="btnResetPrompt">Padrão</button>
+                                    <button class="btn-generate" id="btnSavePrompt" style="margin-bottom: 0; width: auto;"><i class="fa-solid fa-floppy-disk"></i> Salvar Prompt</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: DOCS -->
+            <section id="view-docs" class="view-section">
+                <div class="top-header">
+                    <div>
+                        <h2>Documentação</h2>
+                        <p class="subtitle">Base de conhecimento ZG</p>
+                    </div>
+                </div>
+                <div class="card docs-body" style="padding: 2rem; max-width: 800px;">
+<h3>Chamados priorizados</h3>
                 <p>1° Informamos que a sua solicitação já passou pela nossa triagem inicial:</p>
                 <p>🎟️ Validação do Ticket: O chamado *n°ticket* foi devidamente validado e priorizado em nossa fila de atendimento, considerando a urgência do cenário apresentado.</p>
                 <p>2° Gostaríamos de informar que o seu atendimento recebeu um direcionamento especial pela nossa equipe:</p>
@@ -565,22 +619,28 @@
                 <hr>
                 <h3>Quando o Zerinho finalizou o ticket</h3>
                 <p>5° Verificamos que o zerinho finalizou o chamado e caso você não esteja de acordo ou a sua dúvida ainda não tenha sido totalmente resolvida, é só realizar a reabertura do ticket que a nossa equipe assume a solicitação para fazer todas as validações necessárias.</p>
-            </div>
-        </div>
+                </div>
+            </section>
+        </main>
     </div>
 
+    
     <!-- Modal: Responses -->
     <div class="modal-overlay" id="responseModal" onclick="if(event.target===this)this.style.display='none'" style="z-index: 200;">
-        <div class="modal-content" style="max-width: 1050px; width: 95%;">
+        <div class="modal-content" style="max-width: 1200px; width: 95%;">
             <div class="modal-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0.5rem;">
                 <div class="modal-title" id="responseModalTitle"><i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas</div>
                 <button class="btn-close" id="btnCloseResponseModal"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="resultContent" style="display: none; animation: fadeIn 0.4s ease; flex-direction: column; justify-content: center; padding-top: 1rem;"></div>
+            <div id="resultContent" style="display: flex; flex-direction: column; justify-content: center; padding-top: 1rem;">
+                <div class="response-cards-grid" id="responseCardsGrid">
+                    <!-- Responses injected here -->
+                </div>
+            </div>
         </div>
     </div>
-
-    <script type="module">
+    
+<script type="module">
         import { GoogleGenAI } from 'https://esm.sh/@google/genai@latest';
 
         // ── Data ──────────────────────────────────────────────────────────────
@@ -619,7 +679,7 @@
             "ticketId":    `<div class="form-group"><label class="form-label">Ticket ID</label><input type="text" id="ticketId" class="form-input required-field" placeholder="Ex: 613448"></div>`,
             "nomeCliente": `<div class="form-group"><label class="form-label">Nome do Cliente</label><input type="text" id="nomeCliente" class="form-input required-field" placeholder="Ex: Carlos"></div>`,
             "nomeContato": `<div class="form-group"><label class="form-label">Nome do Contato</label><input type="text" id="nomeContato" class="form-input required-field" placeholder="Ex: Suporte de TI"></div>`,
-            "context":     `<div class="form-group"><label class="form-label">Contexto (Opcional)</label><input type="text" id="context" class="form-input" placeholder="Ex: lentidão na tela principal"></div>`
+            "context":     `<div class="form-group"><label class="form-label">Operadora</label><input type="text" id="context" class="form-input" placeholder="Ex: lentidão na tela principal"></div>`
         };
 
         const SYSTEM_PROMPT = `Você é um analista sênior de suporte da ZG Soluções.
@@ -641,11 +701,11 @@ Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível 
         const areaServicoSelect = document.getElementById('areaServico');
         const servicoSelect     = document.getElementById('servicoEspecifico');
         const dynamicFields     = document.getElementById('dynamicFields');
-        const btnGenerate       = document.getElementById('btnGenerate');
-        const apiKeyInput       = document.getElementById('apiKeyInput');
+        const btnGenerateAction = document.getElementById('btnGenerateAction');
+        const pedidoCliente     = document.getElementById('pedidoCliente');
         const errorMsg          = document.getElementById('errorMsg');
-        const emptyState        = document.getElementById('emptyState');
-        const resultContent     = document.getElementById('resultContent');
+        const resultsContainer  = document.getElementById('resultsContainer');
+        const responseCardsGrid = document.getElementById('responseCardsGrid');
         const loadingOverlay    = document.getElementById('loadingOverlay');
 
         // ── Area → Service listener ───────────────────────────────────────────
@@ -677,256 +737,367 @@ Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível 
             document.querySelectorAll('.required-field').forEach(i => i.addEventListener('input', checkFormReady));
             checkFormReady();
         });
-
-        // ── API Key input ─────────────────────────────────────────────────────
-        apiKeyInput.addEventListener('input', checkFormReady);
+        
+        if (pedidoCliente) {
+            pedidoCliente.addEventListener('input', checkFormReady);
+        }
 
         // ── Form validation ───────────────────────────────────────────────────
         function checkFormReady() {
-            const hasKey      = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key');
+            const keyInput = document.getElementById('modalApiKeyInput');
+            const hasKey      = localStorage.getItem('helpzap_api_key') || (keyInput ? keyInput.value.trim() : '');
             const hasScenario = !!scenarioSelect.value;
             const hasArea     = !!areaServicoSelect.value;
             const hasService  = areaServicoSelect.value === 'A confirmar' || !!servicoSelect.value;
+            const hasPedido   = pedidoCliente ? !!pedidoCliente.value.trim() : true;
             const reqFilled   = Array.from(document.querySelectorAll('.required-field')).every(i => i.value.trim());
-            btnGenerate.disabled = !(hasKey && hasScenario && hasArea && hasService && reqFilled);
+            if (btnGenerateAction) {
+                btnGenerateAction.disabled = !(hasKey && hasScenario && hasArea && hasService && reqFilled && hasPedido);
+            }
         }
 
-        // ── Generate click ────────────────────────────────────────────────────
-        btnGenerate.addEventListener('click', async () => {
-            errorMsg.style.display = 'none';
+        const responseModal     = document.getElementById('responseModal');
+        const btnCloseResponseModal = document.getElementById('btnCloseResponseModal');
+        if (btnCloseResponseModal) btnCloseResponseModal.addEventListener('click', () => responseModal.style.display = 'none');
+        
+        let lastPromptParams = null; // Store for single regeneration
+        
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && responseModal) responseModal.style.display = 'none';
+        });
 
-            const key = apiKeyInput.value.trim() || localStorage.getItem('helpzap_api_key');
-            if (!key) {
-                showError('Por favor, insira sua Chave de API do Gemini.');
-                return;
+        // ── Routing / Views ───────────────────────────────────────────────────
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+            
+        const btnNavGen = document.getElementById('btnNavGenerate');
+            if(btnNavGen) btnNavGen.classList.remove('active');
+            
+            const target = document.getElementById('view-' + viewId);
+            if(target) target.classList.add('active');
+            
+            const btn = document.getElementById('btnNav' + viewId.charAt(0).toUpperCase() + viewId.slice(1));
+            if(btn) btn.classList.add('active');
+            
+            if(viewId === 'generate' && btnNavGen) {
+                btnNavGen.classList.add('active');
             }
+        }
 
-            const scenario    = scenarioSelect.value;
-            const nomeCliente = document.getElementById('nomeCliente')?.value || '[Nome]';
-            const ticketId    = document.getElementById('ticketId')?.value    || '[Ticket]';
-            const nomeContato = document.getElementById('nomeContato')?.value || '[Contato]';
-            const contextVal  = document.getElementById('context')?.value     || (areaServicoSelect.value + ' - ' + (servicoSelect.value || 'Geral'));
+        const btnNavGen = document.getElementById('btnNavGenerate');
+        if(btnNavGen) btnNavGen.addEventListener('click', () => showView('generate'));
+        const btnNavDash = document.getElementById('btnNavDashboard');
+        if(btnNavDash) btnNavDash.addEventListener('click', () => showView('dashboard'));
+        const btnNavHist = document.getElementById('btnNavHistory');
+        if(btnNavHist) btnNavHist.addEventListener('click', () => {
+            showView('history');
+            updateHistoryList();
+        });
+        const btnNavIns = document.getElementById('btnNavInsights');
+        if(btnNavIns) btnNavIns.addEventListener('click', () => showView('insights'));
+        const btnNavConf = document.getElementById('btnNavConfig');
+        if(btnNavConf) btnNavConf.addEventListener('click', () => showView('config'));
+        const btnNavDoc = document.getElementById('btnNavDocs');
+        if(btnNavDoc) btnNavDoc.addEventListener('click', () => showView('docs'));
 
-            let baseText = phraseDatabase[scenario] || '';
-            baseText = baseText
-                .replace('{nome}',       nomeCliente)
-                .replace('{ticketId}',   ticketId)
-                .replace('{nomeContato}',nomeContato)
-                .replace('{context}',    contextVal);
 
-            const finalPrompt = `Texto base:\n"${baseText}"\n\nReescreva-o de forma premium e retorne o JSON.`;
+        // ── Generate click ────────────────────────────────────────────────────
+        if(btnGenerateAction) {
+            btnGenerateAction.addEventListener('click', async () => {
+                if(errorMsg) errorMsg.style.display = 'none';
 
-            // Show loading
-            const oldContent = document.getElementById('resultContent');
-            if(oldContent) oldContent.style.display = 'none';
-            loadingOverlay.style.display = 'flex';
-
-            try {
-                // ── Official @google/genai SDK ────────────────────────────────────
-                const ai = new GoogleGenAI({ apiKey: key });
-                // gemini-3.6-flash is the current recommended model
-                const MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-                let rawResponse = null;
-                let lastError   = null;
-
-                for (const model of MODELS) {
-                    try {
-                        const response = await ai.models.generateContent({
-                            model,
-                            contents: finalPrompt,
-                            config: {
-                                temperature: 0.45,
-                                systemInstruction: SYSTEM_PROMPT
-                            }
-                        });
-                        rawResponse = response.text;
-                        if (rawResponse) {
-                            localStorage.setItem('helpzap_api_key', key);
-                            const ac = document.getElementById('apiKeyContainer');
-                            if (ac) ac.style.display = 'none';
-                            setApiStatus('ok', `Conectado · ${model}`);
-                            break;
-                        }
-                    } catch (modelErr) {
-                        lastError = modelErr.message || String(modelErr);
-                        console.warn(`Model ${model} failed:`, modelErr);
-                        // Auth errors: stop immediately
-                        if (/api.key|invalid.key|permission|401|403/i.test(lastError)) break;
-                    }
-                }
-
-                if (!rawResponse) {
-                    const isAuthErr = /api.key|invalid.key|permission|401|403/i.test(lastError || '');
-                    if (isAuthErr) {
-                        localStorage.removeItem('helpzap_api_key');
-                        apiKeyInput.value = '';
-                        setApiStatus('error', 'Chave inválida');
-                        openApiKeyModal('Chave recusada', 'Sua API Key foi rejeitada. Verifique se está correta.');
-                    } else {
-                        setApiStatus('error', 'Falha na geração');
-                        showError(`Nenhum modelo respondeu. ${lastError || ''}`);
-                    }
-                    loadingOverlay.style.display = 'none';
+                const keyInput = document.getElementById('modalApiKeyInput');
+                const key = localStorage.getItem('helpzap_api_key') || (keyInput ? keyInput.value.trim() : '');
+                if (!key) {
+                    showError('Por favor, configure sua Chave de API na aba Configurações.');
                     return;
                 }
 
-                // Parse JSON
-                let jsonStr = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
-                const start = jsonStr.indexOf('{');
-                const end   = jsonStr.lastIndexOf('}');
-                if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
-                const data = JSON.parse(jsonStr);
+                const scenario    = scenarioSelect.value;
+                const nomeCliente = document.getElementById('nomeCliente')?.value || '[Nome]';
+                const ticketId    = document.getElementById('ticketId')?.value    || '[Ticket]';
+                const nomeContato = document.getElementById('nomeContato')?.value || '[Contato]';
+                const operadoraVal= document.getElementById('operadora')?.value   || (areaServicoSelect.value + ' - ' + (servicoSelect.value || 'Geral'));
+                const pedidoVal   = pedidoCliente ? pedidoCliente.value.trim() : '';
 
-                // Update history
-                const today = new Date().toLocaleDateString('pt-BR');
-                let hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
-                hist[today] = (hist[today] || 0) + 1;
-                localStorage.setItem('helpzap_history', JSON.stringify(hist));
+                let baseText = phraseDatabase[scenario] || '';
+                baseText = baseText
+                    .replace('{nome}',       nomeCliente)
+                    .replace('{ticketId}',   ticketId)
+                    .replace('{nomeContato}',nomeContato)
+                    .replace('{operadora}',  operadoraVal);
 
-                if (typeof updateDashboardStats === 'function') updateDashboardStats();
+                lastPromptParams = { baseText, pedidoVal };
+                const finalPrompt = `Texto base:\n"${baseText}"\n\nPedido do cliente:\n"${pedidoVal}"\n\nReescreva de forma premium considerando o contexto e o pedido, retornando o JSON.`;
 
-                // Render result
-                renderResults(data.suggested_responses, scenarioTextMap[scenario]);
+                
+                if (loadingOverlay) loadingOverlay.style.display = 'flex';
+                btnGenerateAction.disabled = true;
 
-            } catch (err) {
-                const msg = (err.message || '').toLowerCase();
-                // Detect API key-related errors and trigger the modal
-                const isKeyError = msg.includes('api key') || msg.includes('api_key') ||
-                                   msg.includes('unauthorized') || msg.includes('invalid key') ||
-                                   msg.includes('permission') || msg.includes('401') ||
-                                   msg.includes('todos os modelos falharam');
-                if (isKeyError) {
-                    localStorage.removeItem('helpzap_api_key');
-                    apiKeyInput.value = '';
-                    openApiKeyModal('error', 'Chave de API inválida', 'Sua chave foi rejeitada pela API do Gemini. Verifique se ela está correta e tente novamente.');
-                } else {
-                    showError(err.message || 'Ocorreu um erro inesperado.');
+                try {
+                    const ai = new GoogleGenAI({ apiKey: key });
+                    const MODELS = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+                    let rawResponse = null;
+                    let lastError   = null;
+
+                    for (const model of MODELS) {
+                        try {
+                            const response = await ai.models.generateContent({
+                                model,
+                                contents: finalPrompt,
+                                config: {
+                                    temperature: 0.45,
+                                    systemInstruction: typeof currentSystemPrompt !== 'undefined' ? currentSystemPrompt : ''
+                                }
+                            });
+                            rawResponse = response.text;
+                            if (rawResponse) {
+                                localStorage.setItem('helpzap_api_key', key);
+                                setApiStatus('ok', `Conectado · ${model}`);
+                                break;
+                            }
+                        } catch (modelErr) {
+                            lastError = modelErr.message || String(modelErr);
+                            console.warn(`Model ${model} failed:`, modelErr);
+                            if (/api.key|invalid.key|permission|401|403/i.test(lastError)) break;
+                        }
+                    }
+
+                    if (!rawResponse) {
+                        const isAuthErr = /api.key|invalid.key|permission|401|403/i.test(lastError || '');
+                        if (isAuthErr) {
+                            localStorage.removeItem('helpzap_api_key');
+                            setApiStatus('error', 'Chave inválida');
+                            showError('Sua API Key foi rejeitada. Verifique na aba Configurações.');
+                        } else {
+                            setApiStatus('error', 'Falha na geração');
+                            showError(`Nenhum modelo respondeu. ${lastError || ''}`);
+                        }
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        btnGenerateAction.disabled = false;
+                        return;
+                    }
+
+                    let jsonStr = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const start = jsonStr.indexOf('{');
+                    const end   = jsonStr.lastIndexOf('}');
+                    if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
+                    const data = JSON.parse(jsonStr);
+
+                    const today = new Date().toLocaleDateString('pt-BR');
+                    let hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
+                    hist[today] = (hist[today] || 0) + 1;
+                    localStorage.setItem('helpzap_history', JSON.stringify(hist));
+
+                    if (typeof updateDashboardStats === 'function') updateDashboardStats();
+
+                    renderResults(data.suggested_responses);
+
+                } catch (err) {
+                    const msg = (err.message || '').toLowerCase();
+                    if (msg.includes('api key') || msg.includes('unauthorized') || msg.includes('permission') || msg.includes('401')) {
+                        localStorage.removeItem('helpzap_api_key');
+                        showError('Chave de API inválida. Ajuste nas Configurações.');
+                    } else {
+                        showError(err.message || 'Ocorreu um erro inesperado.');
+                    }
+                } finally {
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
+                    btnGenerateAction.disabled = false;
+                    checkFormReady();
                 }
-            } finally {
-                loadingOverlay.style.display = 'none';
-            }
-        });
+            });
+        }
 
         // ── Render result cards ───────────────────────────────────────────────
-        function renderResults(responses, scenarioName) {
-            resultContent.innerHTML = '';
-            document.getElementById('responseModalTitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Respostas Sugeridas: ${scenarioName}`;
+        function renderResults(responses) {
+            if(!responseCardsGrid) return;
+            responseCardsGrid.innerHTML = '';
             
-            const grid = document.createElement('div');
-            grid.className = 'response-cards-grid';
-
             const definitions = {
                 'formal':    { label: 'Profissional', icon: 'fa-briefcase', rec: false },
-                'direto':    { label: 'Direto',       icon: 'fa-bolt',      rec: true },
-                'acolhedor': { label: 'Acolhedor',    icon: 'fa-heart',     rec: false }
+                'direto':    { label: 'Objetiva',     icon: 'fa-bolt',      rec: true },
+                'acolhedor': { label: 'Empática',    icon: 'fa-heart',     rec: false }
             };
 
-            window._helpzapResponses = {};
+            window._helpzapResponses = window._helpzapResponses || {};
 
-            ['formal', 'direto', 'acolhedor'].forEach(key => {
+            ['acolhedor', 'formal', 'direto'].forEach(key => {
                 const respObj = responses[key] || { texto: 'Indisponível', probabilidade: 0 };
                 const textStr = typeof respObj === 'string' ? respObj : (respObj.texto || '');
                 const prob    = typeof respObj === 'object' && respObj.probabilidade ? respObj.probabilidade : 0;
                 
                 window._helpzapResponses[key] = textStr;
-                const def = definitions[key];
-                const icon = def.icon;
-                const label = def.label;
-                const recommended = def.rec;
-
-                const htmlText = textStr
-                    .replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>')
-                    .replace(/\\n/g, '<br>')
-                    .replace(/\n/g, '<br>');
-
+                const def = definitions[key] || { label: 'Opção', icon: 'fa-comment', rec: false };
+                
                 const card = document.createElement('div');
-                card.className = `card-response${recommended ? ' recommended' : ''}`;
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title"><i class="fa-solid ${icon}"></i> ${label}</span>
-                            <div class="badge-accuracy"><i class="fa-solid fa-bullseye"></i> ${prob}% precisão</div>
-                        </div>
-                        ${recommended ? '<span class="badge-recommend">RECOMENDADO</span>' : ''}
-                    </div>
-                    <div class="response-text">${htmlText}</div>
-                    <div class="resp-footer">
-                        <div class="resp-footer-actions">
-                            <button class="btn-copy" data-key="${key}"><i class="fa-regular fa-copy"></i> Copiar</button>
-                            <button class="btn-icon btn-like" title="Gostei dessa resposta"><i class="fa-regular fa-thumbs-up"></i></button>
-                        </div>
-                        <button class="btn-secondary btn-regenerate" title="Gerar nova versão desta resposta"><i class="fa-solid fa-rotate-right"></i> Regerar</button>
-                    </div>`;
-                grid.appendChild(card);
+                card.className = `card-response${def.rec ? ' recommended' : ''}`;
+                card.id = `card-response-${key}`;
+                card.dataset.key = key;
+                
+                populateCard(card, key, textStr, prob, def);
+                responseCardsGrid.appendChild(card);
             });
 
-            resultContent.appendChild(grid);
-            resultContent.style.display = 'flex';
-            document.getElementById('responseModal').style.display = 'flex';
-
-            // Copy buttons
-            grid.querySelectorAll('.btn-copy').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const k = btn.dataset.key;
-                    try {
-                        await navigator.clipboard.writeText(window._helpzapResponses[k]);
-                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
-                        btn.classList.add('copied');
-                        setTimeout(() => {
-                            btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
-                            btn.classList.remove('copied');
-                        }, 2200);
-                    } catch (_) {}
-                });
-            });
-
-            // Like buttons
-            grid.querySelectorAll('.btn-like').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btn.classList.toggle('liked');
-                    const icon = btn.querySelector('i');
-                    if (btn.classList.contains('liked')) {
-                        icon.classList.remove('fa-regular');
-                        icon.classList.add('fa-solid');
-                    } else {
-                        icon.classList.remove('fa-solid');
-                        icon.classList.add('fa-regular');
-                    }
-                });
-            });
-
-            // Regenerate buttons
-            grid.querySelectorAll('.btn-regenerate').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('btnGenerate').click();
-                });
-            });
-
-            // Back button
-            document.getElementById('btnBack').addEventListener('click', () => {
-                resultContent.style.display = 'none';
-                resultContent.innerHTML = '';
-                emptyState.style.display = 'flex';
-            });
+            if (responseModal) {
+                responseModal.style.display = 'flex';
+                // Remove resultsContainer handling as we use modal now
+                const rc = document.getElementById('resultsContainer');
+                if(rc) rc.style.display = 'none';
+            }
+        }
+        
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
         }
 
-        // ── API Key Status & Modal Logic ──────────────────────────────────────
-        const apiKeyModal      = document.getElementById('apiKeyModal');
+        function populateCard(card, key, textStr, prob, def) {
+            const htmlText = escapeHtml(textStr)
+                .replace(/\[(.*?)\]/g, '<span class="tag-green">[$1]</span>')
+                .replace(/\\n/g, '<br>')
+                .replace(/\n/g, '<br>');
+                
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <span class="card-title"><i class="fa-solid ${def.icon}"></i> ${def.label}</span>
+                        <div class="badge-accuracy"><i class="fa-solid fa-bullseye"></i> Sugestão de IA · revise antes de enviar</div>
+                    </div>
+                    ${def.rec ? '<span class="badge-recommend">RECOMENDADO</span>' : ''}
+                </div>
+                <div class="response-text" id="text-response-${key}">${htmlText}</div>
+                <div class="resp-footer">
+                    <div class="resp-footer-actions">
+                        <button class="btn-copy" data-key="${key}"><i class="fa-regular fa-copy"></i> Copiar</button>
+                        <button class="btn-icon btn-like" title="Gostei dessa resposta"><i class="fa-regular fa-thumbs-up"></i></button>
+                        <button class="btn-icon btn-regenerate" data-key="${key}" title="Regerar apenas esta opção"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                </div>`;
+                
+            // Listeners
+            const btnCopy = card.querySelector('.btn-copy');
+            btnCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(window._helpzapResponses[key]);
+                    btnCopy.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                    btnCopy.classList.add('copied');
+                    setTimeout(() => {
+                        btnCopy.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
+                        btnCopy.classList.remove('copied');
+                    }, 2200);
+                } catch (_) { showError('Não foi possível copiar. Selecione o texto e copie manualmente.'); }
+            });
+            
+            const btnLike = card.querySelector('.btn-like');
+            btnLike.addEventListener('click', () => {
+                btnLike.classList.toggle('liked');
+                const icon = btnLike.querySelector('i');
+                if (btnLike.classList.contains('liked')) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                } else {
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                }
+            });
+            
+            const btnRegen = card.querySelector('.btn-regenerate');
+            btnRegen.addEventListener('click', () => regenerateSingle(key, card, def));
+        }
+
+        async function regenerateSingle(key, card, def) {
+            const keyInput = document.getElementById('modalApiKeyInput');
+            const apiKey = localStorage.getItem('helpzap_api_key') || (keyInput ? keyInput.value.trim() : '');
+            if (!apiKey) return showError('Chave da API não encontrada.');
+            if (!lastPromptParams) return showError('Não há contexto para regerar.');
+
+            const textEl = card.querySelector('.response-text');
+            const btnRegen = card.querySelector('.btn-regenerate');
+            const icon = btnRegen.querySelector('i');
+            
+            icon.className = 'fa-solid fa-spinner fa-spin';
+            btnRegen.disabled = true;
+            textEl.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> Regerando...</div>';
+
+            const { baseText, pedidoVal } = lastPromptParams;
+            const finalPrompt = `Texto base:\n"${baseText}"\n\nPedido do cliente:\n"${pedidoVal}"\n\nReescreva de forma premium considerando o contexto e o pedido.
+            
+O OBRIGATÓRIO: Retorne APENAS um objeto JSON válido para a chave "${key}" (sem markdown, sem explicações), neste formato:
+{
+  "${key}": { "texto": "nova mensagem...", "probabilidade": 90 }
+}`;
+
+            try {
+                const ai = new GoogleGenAI({ apiKey });
+                const response = await ai.models.generateContent({
+                    model: 'gemini-1.5-flash',
+                    contents: finalPrompt,
+                    config: {
+                        temperature: 0.6,
+                        systemInstruction: typeof currentSystemPrompt !== 'undefined' ? currentSystemPrompt : ''
+                    }
+                });
+                
+                let rawResponse = response.text;
+                let jsonStr = rawResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const start = jsonStr.indexOf('{');
+                const end   = jsonStr.lastIndexOf('}');
+                if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
+                
+                const data = JSON.parse(jsonStr);
+                const respObj = data[key] || { texto: 'Indisponível', probabilidade: 0 };
+                const textStr = typeof respObj === 'string' ? respObj : (respObj.texto || '');
+                const prob    = typeof respObj === 'object' && respObj.probabilidade ? respObj.probabilidade : 0;
+                
+                window._helpzapResponses[key] = textStr;
+                populateCard(card, key, textStr, prob, def);
+                
+            } catch(e) {
+                console.error(e);
+                textEl.innerHTML = '<div style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Erro ao regerar. Tente novamente.</div>';
+                icon.className = 'fa-solid fa-rotate-right';
+                btnRegen.disabled = false;
+            }
+        }
+        
+// ── Helpers ───────────────────────────────────────────────────────────
+        function showError(msg) {
+            if(errorMsg) {
+                errorMsg.textContent = msg;
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        function updateHistoryList() {
+            const list = document.getElementById('historyList');
+            if(!list) return;
+            const hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
+            const dates = Object.keys(hist).sort((a, b) =>
+                new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'))
+            );
+            list.innerHTML = dates.length === 0
+                ? '<p style="color:var(--text-muted);text-align:center;padding:1rem;">Nenhum registro ainda.</p>'
+                : dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${hist[d]} tickets</span></div>`).join('');
+        }
+
+        // ── Config Logic (API Key & Prompt) ───────────────────────────────────
         const modalApiKeyInput = document.getElementById('modalApiKeyInput');
         const btnSaveApiKey    = document.getElementById('btnSaveApiKey');
         const btnTestKey       = document.getElementById('btnTestKey');
         const testResultEl     = document.getElementById('testResult');
-        const apikeyErrorTag   = document.getElementById('apikeyErrorTag');
 
-        // Update the sidebar API status pill
         function setApiStatus(state, label) {
             const btn  = document.getElementById('btnApiStatus');
             const lbl  = document.getElementById('apiStatusLabel');
-            // Remove all state classes
-            btn.classList.remove('st-unknown', 'st-testing', 'st-ok', 'st-error');
-            btn.classList.add(`st-${state}`);
-            lbl.textContent = label;
-            // Also update the in-modal status row
+            if(btn) {
+                btn.classList.remove('st-unknown', 'st-testing', 'st-ok', 'st-error');
+                btn.classList.add(`st-${state}`);
+            }
+            if(lbl) lbl.textContent = label;
+            
             const dot  = document.getElementById('modalStatusDot');
             const txt  = document.getElementById('modalStatusText');
             const mdl  = document.getElementById('modalStatusModel');
@@ -936,161 +1107,152 @@ Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível 
             if (mdl && state !== 'ok') mdl.textContent = '';
         }
 
-        // Lightweight key validation via SDK — uses same API as generation
         async function testApiKey(key) {
             setTestResult('testing', '<i class="fa-solid fa-spinner fa-spin"></i> Testando conexão...');
             setApiStatus('testing', 'Testando...');
             try {
                 const ai = new GoogleGenAI({ apiKey: key });
                 const response = await ai.models.generateContent({
-                    model: 'gemini-3.6-flash',
+                    model: 'gemini-1.5-flash',
                     contents: 'Responda apenas: OK',
                     config: { maxOutputTokens: 5 }
                 });
                 if (response.text) {
-                    setTestResult('ok', '<i class="fa-solid fa-circle-check"></i> Conexão validada! Modelo: gemini-3.6-flash');
-                    setApiStatus('ok', 'Conectado · gemini-3.6-flash');
+                    setTestResult('ok', '<i class="fa-solid fa-circle-check"></i> Conexão validada! Modelo: gemini-1.5-flash');
+                    setApiStatus('ok', 'Conectado · gemini-1.5-flash');
                     return true;
                 } else {
-                    throw new Error('Resposta vazia do modelo');
+                    throw new Error('Resposta vazia');
                 }
             } catch (e) {
                 const msg = e.message || String(e);
-                setTestResult('error', `<i class="fa-solid fa-circle-xmark"></i> ${msg}`);
+                setTestResult('error', `<i class="fa-solid fa-circle-xmark"></i> ${escapeHtml(msg)}`);
                 setApiStatus('error', 'Chave inválida');
                 return false;
             }
         }
 
         function setTestResult(state, html) {
-            testResultEl.className = `test-result ${state}`;
-            testResultEl.innerHTML = html;
-            testResultEl.style.display = 'flex';
-        }
-
-        function openApiKeyModal(title, desc) {
-            modalApiKeyInput.value = '';
-            testResultEl.style.display = 'none';
-            btnSaveApiKey.disabled = true;
-            btnTestKey.disabled = true;
-            if (apikeyErrorTag) apikeyErrorTag.style.display = 'none';
-            // Sync modal status row with current state
-            const savedKey = localStorage.getItem('helpzap_api_key');
-            const statusBtn = document.getElementById('btnApiStatus');
-            const isOk = statusBtn && statusBtn.classList.contains('st-ok');
-            const dot  = document.getElementById('modalStatusDot');
-            const txt  = document.getElementById('modalStatusText');
-            if (dot) dot.style.background = isOk ? '#22c55e' : savedKey ? '#ca8a04' : 'var(--text-muted)';
-            if (txt) txt.textContent = isOk ? 'Conectado' : savedKey ? 'Chave salva (não validada)' : 'Nenhuma chave configurada';
-            apiKeyModal.style.display = 'flex';
-            setTimeout(() => modalApiKeyInput.focus(), 100);
-        }
-
-        modalApiKeyInput.addEventListener('input', () => {
-            const hasVal = !!modalApiKeyInput.value.trim();
-            btnSaveApiKey.disabled = !hasVal;
-            btnTestKey.disabled    = !hasVal;
-            testResultEl.style.display = 'none';
-        });
-
-        modalApiKeyInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !btnSaveApiKey.disabled) btnSaveApiKey.click();
-        });
-
-        // Test button: validate key WITHOUT saving
-        btnTestKey.addEventListener('click', async () => {
-            const k = modalApiKeyInput.value.trim();
-            if (!k) return;
-            btnTestKey.disabled = true;
-            btnSaveApiKey.disabled = true;
-            await testApiKey(k);
-            btnTestKey.disabled = false;
-            btnSaveApiKey.disabled = false;
-        });
-
-        // Save & validate: save then auto-test
-        btnSaveApiKey.addEventListener('click', async () => {
-            const newKey = modalApiKeyInput.value.trim();
-            if (!newKey) return;
-            btnSaveApiKey.disabled = true;
-            btnTestKey.disabled    = true;
-            const ok = await testApiKey(newKey);
-            if (ok) {
-                localStorage.setItem('helpzap_api_key', newKey);
-                apiKeyInput.value = newKey;
-                const ac = document.getElementById('apiKeyContainer');
-                if (ac) ac.style.display = 'none';
-                checkFormReady();
-                // Close after short delay so user sees the "success" state
-                setTimeout(() => { apiKeyModal.style.display = 'none'; }, 1200);
-            } else {
-                // Key failed — keep modal open, re-enable buttons
-                btnSaveApiKey.disabled = false;
-                btnTestKey.disabled    = false;
+            if(testResultEl) {
+                testResultEl.className = `test-result ${state}`;
+                testResultEl.innerHTML = html;
+                testResultEl.style.display = 'flex';
             }
-        });
+        }
 
-        document.getElementById('btnCancelApiKey').addEventListener('click', () => {
-            apiKeyModal.style.display = 'none';
-        });
+        if(modalApiKeyInput) {
+            modalApiKeyInput.addEventListener('input', () => {
+                const hasVal = !!modalApiKeyInput.value.trim();
+                if(btnSaveApiKey) btnSaveApiKey.disabled = !hasVal;
+                if(btnTestKey) btnTestKey.disabled    = !hasVal;
+                if(testResultEl) testResultEl.style.display = 'none';
+                checkFormReady();
+            });
 
-        // Sidebar status pill opens the modal
-        document.getElementById('btnApiStatus').addEventListener('click', () => {
-            openApiKeyModal();
-        });
+            modalApiKeyInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && btnSaveApiKey && !btnSaveApiKey.disabled) btnSaveApiKey.click();
+            });
+        }
 
-        // Auto-open on load if no key saved
+        if(btnTestKey) {
+            btnTestKey.addEventListener('click', async () => {
+                const k = modalApiKeyInput ? modalApiKeyInput.value.trim() : '';
+                if (!k) return;
+                btnTestKey.disabled = true;
+                if(btnSaveApiKey) btnSaveApiKey.disabled = true;
+                await testApiKey(k);
+                btnTestKey.disabled = false;
+                if(btnSaveApiKey) btnSaveApiKey.disabled = false;
+            });
+        }
+
+        if(btnSaveApiKey) {
+            btnSaveApiKey.addEventListener('click', async () => {
+                const newKey = modalApiKeyInput ? modalApiKeyInput.value.trim() : '';
+                if (!newKey) return;
+                btnSaveApiKey.disabled = true;
+                if(btnTestKey) btnTestKey.disabled = true;
+                const ok = await testApiKey(newKey);
+                if (ok) {
+                    localStorage.setItem('helpzap_api_key', newKey);
+                }
+                btnSaveApiKey.disabled = false;
+                if(btnTestKey) btnTestKey.disabled = false;
+            });
+        }
+
+        const btnApiStatus = document.getElementById('btnApiStatus');
+        if(btnApiStatus) {
+            btnApiStatus.addEventListener('click', () => {
+                showView('config');
+            });
+        }
+
         const _savedKey = localStorage.getItem('helpzap_api_key');
         if (_savedKey) {
-            apiKeyInput.value = _savedKey;
-            // Run a silent background validation
+            if(modalApiKeyInput) modalApiKeyInput.value = _savedKey;
             testApiKey(_savedKey).then(ok => {
-                if (!ok) {
-                    // Key saved but invalid — prompt silently (no auto-open)
-                    setApiStatus('error', 'Chave inválida');
-                }
+                if (!ok) setApiStatus('error', 'Chave inválida');
             });
         } else {
-            setTimeout(() => openApiKeyModal('Bem-vindo ao Helpzap AI!', 'Insira sua API Key do Gemini para começar.'), 600);
+            setApiStatus('unknown', 'Nenhuma chave salva');
         }
 
+        const promptEditor = document.getElementById('promptEditor');
+        const promptSaveMsg = document.getElementById('promptSaveMsg');
+        
+        let currentSystemPrompt = localStorage.getItem('helpzap_system_prompt') || `Você é um analista sênior de suporte da ZG Soluções.
+Baseado no texto base abaixo, reescreva a mensagem de forma premium, humanizada e natural em TRÊS tons diferentes.
+Mantenha as tags literais como [Nome], [Ticket] e [Operadora] na saída caso o texto base use placeholders.
 
-        // ── Helpers ───────────────────────────────────────────────────────────
-        function showError(msg) {
-            errorMsg.textContent = msg;
-            errorMsg.style.display = 'block';
+O OBRIGATÓRIO: Retorne APENAS um objeto JSON válido com este formato exato (sem markdown, sem explicações):
+{
+  "suggested_responses": {
+    "formal": { "texto": "mensagem formal", "probabilidade": 95 },
+    "direto": { "texto": "mensagem direta", "probabilidade": 88 },
+    "acolhedor": { "texto": "mensagem acolhedora", "probabilidade": 92 }
+  }
+}
+Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível de precisão/adequação sugerido.`;
+
+        if (promptEditor) {
+            promptEditor.value = currentSystemPrompt;
+        }
+        
+        const btnSavePrompt = document.getElementById('btnSavePrompt');
+        if (btnSavePrompt) {
+            btnSavePrompt.addEventListener('click', () => {
+                if(promptEditor) {
+                    currentSystemPrompt = promptEditor.value.trim();
+                    localStorage.setItem('helpzap_system_prompt', currentSystemPrompt);
+                }
+                if(promptSaveMsg) {
+                    promptSaveMsg.style.display = 'block';
+                    setTimeout(() => { promptSaveMsg.style.display = 'none'; }, 3000);
+                }
+            });
         }
 
-        // ── Modal Logic ───────────────────────────────────────────────────────
-        document.getElementById('btnCloseResponseModal').addEventListener('click', () => {
-            document.getElementById('responseModal').style.display = 'none';
-        });
+        const btnResetPrompt = document.getElementById('btnResetPrompt');
+        if (btnResetPrompt) {
+            btnResetPrompt.addEventListener('click', () => {
+                if(promptEditor) {
+                    promptEditor.value = `Você é um analista sênior de suporte da ZG Soluções.
+Baseado no texto base abaixo, reescreva a mensagem de forma premium, humanizada e natural em TRÊS tons diferentes.
+Mantenha as tags literais como [Nome], [Ticket] e [Operadora] na saída caso o texto base use placeholders.
 
-        document.getElementById('btnHistorySidebar').addEventListener('click', (e) => {
-            e.preventDefault();
-            const list = document.getElementById('historyList');
-            const hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
-            const dates = Object.keys(hist).sort((a, b) =>
-                new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'))
-            );
-            list.innerHTML = dates.length === 0
-                ? '<p style="color:var(--text-muted);text-align:center;padding:1rem;">Nenhum registro ainda.</p>'
-                : dates.map(d => `<div class="history-item"><span class="history-date">${d}</span><span class="history-count">${hist[d]} tickets</span></div>`).join('');
-            document.getElementById('historyModal').style.display = 'flex';
-        });
-        document.getElementById('btnCloseHistory').addEventListener('click', () => document.getElementById('historyModal').style.display = 'none');
-
-        document.getElementById('btnInsightsSidebar').addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('insightsModal').style.display = 'flex';
-        });
-        document.getElementById('btnCloseInsights').addEventListener('click', () => document.getElementById('insightsModal').style.display = 'none');
-
-        document.getElementById('btnDocsSidebar').addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('docsModal').style.display = 'flex';
-        });
-        document.getElementById('btnCloseDocsModal').addEventListener('click', () => document.getElementById('docsModal').style.display = 'none');
+O OBRIGATÓRIO: Retorne APENAS um objeto JSON válido com este formato exato (sem markdown, sem explicações):
+{
+  "suggested_responses": {
+    "formal": { "texto": "mensagem formal", "probabilidade": 95 },
+    "direto": { "texto": "mensagem direta", "probabilidade": 88 },
+    "acolhedor": { "texto": "mensagem acolhedora", "probabilidade": 92 }
+  }
+}
+Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível de precisão/adequação sugerido.`;
+                }
+            });
+        }
 
         // ── Theme Toggle ──────────────────────────────────────────────────────
         const htmlEl     = document.documentElement;
@@ -1100,39 +1262,33 @@ Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível 
         function applyTheme(theme) {
             if (theme === 'light') {
                 htmlEl.setAttribute('data-theme', 'light');
-                themeIcon.className    = 'fa-solid fa-sun';   // sol = estamos no claro
-                themeLabel.textContent = 'Modo Claro';        // mostra o modo ATUAL
+                if(themeIcon) themeIcon.className    = 'fa-solid fa-sun';
+                if(themeLabel) themeLabel.textContent = 'Tema: Claro';
             } else {
                 htmlEl.removeAttribute('data-theme');
-                themeIcon.className    = 'fa-solid fa-moon';  // lua = estamos no escuro
-                themeLabel.textContent = 'Modo Escuro';       // mostra o modo ATUAL
+                if(themeIcon) themeIcon.className    = 'fa-solid fa-moon';
+                if(themeLabel) themeLabel.textContent = 'Tema: Escuro';
             }
             localStorage.setItem('helpzap_theme', theme);
         }
 
-        // Restore saved theme (default = light / ZG brand)
         const savedTheme = localStorage.getItem('helpzap_theme') || 'light';
         applyTheme(savedTheme);
 
-        document.getElementById('btnThemeToggle').addEventListener('click', () => {
-            const current = htmlEl.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-            applyTheme(current === 'light' ? 'dark' : 'light');
-            localStorage.setItem('helpzap_theme_user_set', '1'); // user explicitly chose
-        });
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        if(btnThemeToggle) {
+            btnThemeToggle.addEventListener('click', () => {
+                const current = htmlEl.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+                applyTheme(current === 'light' ? 'dark' : 'light');
+                localStorage.setItem('helpzap_theme_user_set', '1');
+            });
+        }
 
-        // Migration: if user never explicitly picked a theme, clear old 'dark' so light wins
         if (!localStorage.getItem('helpzap_theme_user_set')) {
             localStorage.removeItem('helpzap_theme');
         }
 
-        // ── Init: restore saved API key ───────────────────────────────────────
-        if (localStorage.getItem('helpzap_api_key')) {
-            const ac = document.getElementById('apiKeyContainer');
-            if (ac) ac.style.display = 'none';
-        }
-        checkFormReady();
-
-        // Dashboard sync
+        // ── Dashboard sync ────────────────────────────────────────────────────
         function updateDashboardStats() {
             const hist = JSON.parse(localStorage.getItem('helpzap_history') || '{}');
             const today = new Date().toLocaleDateString('pt-BR');
@@ -1155,6 +1311,8 @@ Nota: "probabilidade" deve ser um número inteiro de 0 a 100 indicando o nível 
             if (elTime) elTime.innerText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
         }
         updateDashboardStats();
+        checkFormReady();
+
     </script>
 </body>
 </html>
